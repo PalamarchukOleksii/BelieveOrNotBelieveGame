@@ -1,0 +1,14 @@
+.card-heap {
+  position: relative;
+  display: flex;
+  width: 200px;
+  height: 200px;
+}
+
+.card-image {
+  position: absolute;
+  width: 70px;
+  height: auto;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+}

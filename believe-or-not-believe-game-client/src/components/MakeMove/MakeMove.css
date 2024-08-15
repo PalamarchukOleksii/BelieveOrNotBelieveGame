@@ -1,0 +1,41 @@
+.make-move {
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  gap: 12px;
+  align-items: center;
+  background-color: #867e6d;
+  border-top-left-radius: 25px;
+  padding: 15px;
+  right: 0;
+  bottom: 0;
+}
+
+h2 {
+  color: #202020;
+  padding-top: 10px;
+  padding-bottom: 5px;
+  margin: 0;
+}
+
+button {
+  background-color: whitesmoke;
+  color: #333;
+  font-weight: bold;
+  width: 150px;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  outline: none;
+}
+
+button:hover {
+  background-color: #69dba3;
+}
+
+button:focus {
+  background-color: #69dba3;
+}

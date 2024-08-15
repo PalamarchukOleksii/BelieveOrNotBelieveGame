@@ -1,0 +1,13 @@
+.opponent-cards {
+  display: flex;
+}
+
+.opponents-card-image {
+  width: 60px;
+  height: auto;
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}

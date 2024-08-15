@@ -1,0 +1,11 @@
+.palyer-cards {
+  display: flex;
+  position: fixed;
+  background-color: #867e6d;
+  width: 1000px;
+  bottom: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 25px;
+  padding: 10px;
+}

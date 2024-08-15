@@ -1,0 +1,51 @@
+.start-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  position: fixed;
+  background-color: #867e6d;
+  width: 200px;
+  bottom: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
+  padding: 20px;
+}
+
+.card-count {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+}
+
+label {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+button {
+  background-color: whitesmoke;
+  color: #333;
+  font-weight: bold;
+  width: 150px;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  outline: none;
+}
+
+button:hover {
+  background-color: #69dba3;
+}
+
+button:focus {
+  background-color: #69dba3;
+}
