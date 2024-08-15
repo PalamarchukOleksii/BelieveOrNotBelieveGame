@@ -8,7 +8,7 @@ function OpponentsCard({ count }) {
 
   return (
     <div className="opponent-cards">
-      {Array.from({ length: count }, (index) => (
+      {Array.from({ length: count }, (_, index) => (
         <img
           key={index}
           src="src/assets/CardBack.svg"

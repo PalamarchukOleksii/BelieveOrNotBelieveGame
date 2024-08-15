@@ -25,6 +25,8 @@ const exampleValues = [
 function GameTable({ connection }) {
   const [gameStarted, setGameStarted] = useState(false);
   const [cards, setCards] = useState([]);
+  const [cardsOnTableCount, setCardsOnTableCount] = useState(0);
+  const [cardsForMove, setCardsForMove] = useState([]);
 
   useEffect(() => {
     try {
@@ -63,17 +65,31 @@ function GameTable({ connection }) {
     setGameStarted(true);
   };
 
+  const handleCardClick = (card) => {
+    setCardsForMove((prevCardsForMove) => {
+      if (prevCardsForMove.some((c) => c.id === card.id)) {
+        return prevCardsForMove.filter((c) => c.id !== card.id);
+      } else {
+        return [...prevCardsForMove, card];
+      }
+    });
+  };
+
   return (
     <>
       <Opponents connection={connection} />
-      <CardHeap count={40} />
       {!gameStarted ? (
         <StartGame onStart={handleStartGame} />
       ) : (
         <>
+          <CardHeap count={cardsOnTableCount} />
           <ChooseCardValue values={exampleValues} />
           <MakeAssume />
-          <PlayersCard cards={cards} />
+          <PlayersCard
+            cards={cards}
+            onCardClick={handleCardClick}
+            cardsForMove={cardsForMove}
+          />
           <MakeMove />
         </>
       )}

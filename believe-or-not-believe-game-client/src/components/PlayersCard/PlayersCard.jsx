@@ -2,7 +2,7 @@ import React from "react";
 import GameCard from "../GameCard/GameCard";
 import "./PlayersCard.css";
 
-function PlayersCard({ cards }) {
+function PlayersCard({ cards, onCardClick, cardsForMove }) {
   const marginRight =
     -168 + 1000 / (cards.length - 1) - 168 / (cards.length - 1);
 
@@ -14,6 +14,8 @@ function PlayersCard({ cards }) {
           cardSuit={card.cardSuit}
           cardValue={card.cardValue}
           marginRight={marginRight}
+          onClick={() => onCardClick(card)}
+          isSelected={cardsForMove.some((c) => c.id === card.id)}
         />
       ))}
     </div>
