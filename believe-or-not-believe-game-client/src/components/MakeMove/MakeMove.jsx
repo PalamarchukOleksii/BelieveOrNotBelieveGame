@@ -1,10 +1,18 @@
 import "./MakeMove.css";
+import ChooseCardValue from "../ChooseCardValue/ChooseCardValue";
 
-function MakeMove() {
+function MakeMove({ onMove, onSelectValue, values, cardValue }) {
   return (
     <div className="make-move">
       <h2>Make move</h2>
-      <button type="submit">Move</button>
+      <ChooseCardValue
+        onSelectValue={onSelectValue}
+        values={values}
+        cardValue={cardValue}
+      />
+      <button className="move-button" onClick={onMove}>
+        Move
+      </button>
     </div>
   );
 }

@@ -1,38 +1,43 @@
 import React, { useEffect, useState } from "react";
 import "./CardHeap.css";
 
-function CardHeap({ count }) {
+function CardHeap({ count, style = {} }) {
   const [cards, setCards] = useState([]);
 
   useEffect(() => {
-    const container = document.querySelector(".card-heap");
-
-    if (!container) return;
-
-    const containerSize = 200;
+    const containerHeight = Number(style.height) || 200;
+    const containerWidth = Number(style.width) || 200;
 
     const generateRandomPosition = () => ({
-      top: Math.random() * (containerSize - 100),
-      left: Math.random() * (containerSize - 70),
+      top: Math.random() * (containerHeight - 100),
+      left: Math.random() * (containerWidth - 70),
     });
 
-    const newCards = Array.from({ length: count }).map((_, index) => {
-      const position = generateRandomPosition();
-      return {
-        style: {
-          top: `${position.top}px`,
-          left: `${position.left}px`,
-          transform: `rotate(${Math.random() * 90 - 45}deg)`,
-          zIndex: index,
-        },
-      };
-    });
+    if (count == 0) {
+      setCards([]);
+    } else {
+      setCards((prevCards) => {
+        const newCards = Array.from({ length: count - prevCards.length }).map(
+          (_, index) => {
+            const position = generateRandomPosition();
+            return {
+              style: {
+                top: `${position.top}px`,
+                left: `${position.left - Number(style.left)}px`,
+                transform: `rotate(${Math.random() * 90 - 45}deg)`,
+                zIndex: prevCards.length + index,
+              },
+            };
+          }
+        );
 
-    setCards(newCards);
+        return [...prevCards, ...newCards];
+      });
+    }
   }, [count]);
 
   return (
-    <div className="card-heap">
+    <div className="card-heap" style={style}>
       {cards.map((card, index) => (
         <img
           key={index}

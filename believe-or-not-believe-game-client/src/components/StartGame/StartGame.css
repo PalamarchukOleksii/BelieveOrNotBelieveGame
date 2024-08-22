@@ -20,7 +20,7 @@
   font-size: 16px;
   border-radius: 4px;
   border: 1px solid #ccc;
-  background-color: #fff;
+  background-color: whitesmoke;
 }
 
 label {
@@ -28,7 +28,7 @@ label {
   font-weight: bold;
 }
 
-button {
+.start-button {
   background-color: whitesmoke;
   color: #333;
   font-weight: bold;
@@ -42,10 +42,9 @@ button {
   outline: none;
 }
 
-button:hover {
+.start-button:hover {
   background-color: #69dba3;
 }
-
-button:focus {
+.start-button:focus {
   background-color: #69dba3;
 }

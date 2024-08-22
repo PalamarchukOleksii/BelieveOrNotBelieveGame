@@ -18,7 +18,7 @@ h2 {
   margin: 0;
 }
 
-button {
+.assume-button {
   background-color: whitesmoke;
   color: #333;
   font-weight: bold;
@@ -32,10 +32,10 @@ button {
   outline: none;
 }
 
-button:hover {
+.assume-button:hover {
   background-color: #69dba3;
 }
 
-button:focus {
+.assume-button:focus {
   background-color: #69dba3;
 }

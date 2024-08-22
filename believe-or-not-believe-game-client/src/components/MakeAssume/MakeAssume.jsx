@@ -1,11 +1,15 @@
 import "./MakeAssume.css";
 
-function MakeAssume() {
+function MakeAssume({ onAssume }) {
   return (
     <div className="make-assume">
       <h2>Make assume</h2>
-      <button type="submit">Believe</button>
-      <button type="submit">Not Believe</button>
+      <button className="assume-button" onClick={() => onAssume(true)}>
+        Believe
+      </button>
+      <button className="assume-button" onClick={() => onAssume(false)}>
+        Not Believe
+      </button>
     </div>
   );
 }

@@ -1,13 +1,28 @@
-import CardValue from "../CardValue/CardValue";
 import "./ChooseCardValue.css";
 
-function ChooseCardValue({ values }) {
+function ChooseCardValue({ cardValue, values, onSelectValue }) {
   return (
-    <div className="choose-value">
-      {values.map((value) => (
-        <CardValue key={value} value={value} />
-      ))}
-    </div>
+    <>
+      <select
+        className="card-value"
+        value={cardValue}
+        onChange={onSelectValue}
+        required
+      >
+        {typeof values === "string" ? (
+          <option value={values}>{values}</option>
+        ) : (
+          <>
+            <option value="">Choose card value</option>
+            {values.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </>
+        )}
+      </select>
+    </>
   );
 }
 

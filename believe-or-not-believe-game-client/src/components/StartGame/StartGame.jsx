@@ -25,7 +25,7 @@ function StartGame({ onStart }) {
         <option value="36">36</option>
         <option value="52">52</option>
       </select>
-      <button type="button" onClick={handleStartClick}>
+      <button type="button" className="start-button" onClick={handleStartClick}>
         Start game
       </button>
     </div>

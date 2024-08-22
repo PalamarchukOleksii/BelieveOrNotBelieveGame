@@ -1,18 +1,20 @@
 import React, { useEffect, useState } from "react";
-import "./App.css";
+import { Routes, Route } from "react-router-dom";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import GameTable from "./pages/GameTable";
 import Startup from "./pages/Startup";
-import { Routes, Route } from "react-router-dom";
+import "./App.css";
 
-async function StartConnection() {
+function StartConnection() {
   try {
     const connection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7075/game-hub")
-      .configureLogging(LogLevel.Information)
-      .withAutomaticReconnect()
+      .withUrl("http://26.248.118.214:7075/game-hub")
       .build();
-    await connection.start();
+
+    connection.serverTimeoutInMilliseconds = 120000;
+    connection.keepAliveIntervalInMilliseconds = 240000;
+
+    connection.start().catch((err) => console.error(err));
 
     return connection;
   } catch (e) {
@@ -25,12 +27,8 @@ function App() {
   const [connection, setConnection] = useState(null);
 
   useEffect(() => {
-    const setupConnection = async () => {
-      const conn = await StartConnection();
-      setConnection(conn);
-    };
-
-    setupConnection();
+    const conn = StartConnection();
+    setConnection(conn);
 
     return () => {
       if (connection) {

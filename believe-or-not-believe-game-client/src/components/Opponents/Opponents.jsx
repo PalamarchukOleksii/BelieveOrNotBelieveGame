@@ -11,12 +11,12 @@ function Opponents({ connection }) {
       return;
     }
 
-    try {
-      connection.on("ReceiveOpponentsInfo", (opponents) => {
-        console.log("Received opponents info:", opponents);
-        setOpponentsInfo(opponents);
-      });
+    connection.on("ReceiveOpponentsInfo", (opponents) => {
+      console.log("Received opponents info:", opponents);
+      setOpponentsInfo(opponents);
+    });
 
+    try {
       connection.invoke("SendInfoAboutOpponents");
     } catch (e) {
       console.error("Error while setting up connection listener:", e);
@@ -35,7 +35,7 @@ function Opponents({ connection }) {
         <OpponentsPlayer
           key={opponent.name}
           username={opponent.name}
-          cardCount={opponent.playersCards.length}
+          cardCount={opponent.cardCount}
         />
       ))}
     </div>

@@ -54,7 +54,7 @@ p {
   font-size: 1rem;
 }
 
-.username-form button {
+.username-form .join-button {
   background-color: #ababab;
   font-weight: bold;
   color: #ffffff;
@@ -66,7 +66,7 @@ p {
   transition: background-color 0.3s;
 }
 
-.username-form button:hover {
+.username-form .join-button:hover {
   color: #333;
   background-color: #69dba3;
 }
