@@ -56,7 +56,12 @@ function Startup({ connection }) {
         onSubmit={handleSubmit}
         onInputChange={handleInputChange}
       />
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        closeOnClick
+        theme="dark"
+        transition:Slide
+      />
     </>
   );
 }

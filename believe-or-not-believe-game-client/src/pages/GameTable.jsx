@@ -188,7 +188,12 @@ function GameTable({ connection }) {
   return (
     <>
       <Opponents connection={connection} />
-      <ToastContainer />
+      <ToastContainer
+        position="top-right"
+        closeOnClick
+        theme="dark"
+        transition:Slide
+      />
       {!gameStarted ? (
         <StartGame onStart={handleStartGame} />
       ) : (
