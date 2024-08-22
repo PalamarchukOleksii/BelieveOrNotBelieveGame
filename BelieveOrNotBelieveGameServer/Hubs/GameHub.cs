@@ -13,13 +13,13 @@ namespace BelieveOrNotBelieveGameServer.Hubs
             if (!GameTable.Players.Exists(x => x.Name == username))
             {
                 GameTable.Players.Add(new Player { PlayerConnectionId = Context.ConnectionId, Name = username });
-                await Clients.All.SendAsync("ReceiveJoin", $"Player {username} joined game;");
+                await Clients.All.SendAsync("ReceiveJoin", $"Player {username} joined game");
 
                 await SendInfoAboutOpponents();
             }
             else
             {
-                await Clients.Caller.SendAsync("ReceiveNotJoin", $"Player with username {username} is alreade exist, change username;");
+                await Clients.Caller.SendAsync("ReceiveNotJoin", $"Player with username {username} is alreade exist, change username");
             }
         }
 
@@ -28,7 +28,7 @@ namespace BelieveOrNotBelieveGameServer.Hubs
             GameTable.Players.Single(x => x.PlayerConnectionId == Context.ConnectionId).StartGame = true;
             if(GameTable.Players.Count == 1)
             {
-                await Clients.All.SendAsync("ReceiveNotStart", "At least two players are required;");
+                await Clients.All.SendAsync("ReceiveNotStart", "At least two players are required");
                 GameTable.Players.Single(x => x.PlayerConnectionId == Context.ConnectionId).StartGame = false;
             }
             else if (GameTable.Players.Exists(x => x.PlayerConnectionId == Context.ConnectionId) && GameTable.Players.Count(x => x.StartGame) == GameTable.Players.Count)
@@ -38,7 +38,7 @@ namespace BelieveOrNotBelieveGameServer.Hubs
                 await SendPlayersCards();
                 await SendInfoAboutOpponents();
 
-                await Clients.Client(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).PlayerConnectionId).SendAsync("ReceiveStartMove", "You start the game;");
+                await Clients.Client(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).PlayerConnectionId).SendAsync("ReceiveStartMove", "You start the game");
 
                 string[] values;
 
@@ -75,11 +75,11 @@ namespace BelieveOrNotBelieveGameServer.Hubs
 
                 if (nextPl.PlayersCards.Count == 0)
                 {
-                    await Clients.Client(nextPl.PlayerConnectionId).SendAsync("ReceiveNextAssume", "You make assume;");
+                    await Clients.Client(nextPl.PlayerConnectionId).SendAsync("ReceiveNextAssume", "You make assume");
                 }
                 else
                 {
-                    await Clients.Client(nextPl.PlayerConnectionId).SendAsync("ReceiveNextMoveAssume", "You make assume or move;");
+                    await Clients.Client(nextPl.PlayerConnectionId).SendAsync("ReceiveNextMoveAssume", "You make assume or move");
                 }
 
                 await Clients.All.SendAsync("ReceiveCardOnTableCount", GameTable.CardsOnTable.Count);
@@ -89,7 +89,7 @@ namespace BelieveOrNotBelieveGameServer.Hubs
             }
             else if(pl.PlayersCards.Count == 0)
             {
-                await Clients.Caller.SendAsync("RecieveNotMove", "You can only make an assume;");
+                await Clients.Caller.SendAsync("RecieveNotMove", "You can only make an assume");
             }
         }
 
@@ -108,7 +108,7 @@ namespace BelieveOrNotBelieveGameServer.Hubs
                 else
                 {
                     await Clients.All.SendAsync("ReceiveAssume", result.Item2);
-                    await Clients.Client(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).PlayerConnectionId).SendAsync("ReceiveFirstMove", "You make move;");
+                    await Clients.Client(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).PlayerConnectionId).SendAsync("ReceiveFirstMove", "You make move");
                 }
 
                 await SendPlayersCards();
@@ -155,7 +155,7 @@ namespace BelieveOrNotBelieveGameServer.Hubs
                 if (GameTable.GameStarted)
                 {
                     GameTable.GameStarted = false;
-                    await Clients.All.SendAsync("ReceiveGameOver", $"Game over, {GameTable.Players.Single(x => x.PlayerConnectionId == Context.ConnectionId).Name} lose;");
+                    await Clients.All.SendAsync("ReceiveGameOver", $"Game over, {GameTable.Players.Single(x => x.PlayerConnectionId == Context.ConnectionId).Name} lose");
                 }
 
                 GameTable.Players.Remove(GameTable.Players.Single(x => x.PlayerConnectionId == Context.ConnectionId));

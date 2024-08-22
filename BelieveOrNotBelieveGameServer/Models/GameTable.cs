@@ -80,11 +80,11 @@
 
                 if (Players.TrueForAll(x => x.PlayersCards.Count == 0))
                 {
-                    result = new Tuple<int, string>(5, $"Game over, {CurrentMovePlayerName} lose, player {PreviousMovePlayerName} do not lie;");
+                    result = new Tuple<int, string>(5, $"Game over, {CurrentMovePlayerName} lose, player {PreviousMovePlayerName} do not lie");
                 }
                 else if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = new Tuple<int, string>(5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayerName} do not lie;");
+                    result = new Tuple<int, string>(5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayerName} do not lie");
                 }
                 else if (Players.Single(x => x.Name == CurrentMovePlayerName).PlayersCards.Count > 0)
                 {
@@ -94,12 +94,12 @@
                     Players.RemoveAll(x => x.PlayersCards.Count == 0);
                     NextMovePlayerName = Players[(Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayerName)) + 1) % Players.Count].Name;
 
-                    result = new Tuple<int, string>(1, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do not lie;");
+                    result = new Tuple<int, string>(1, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do not lie");
                 }
                 else
                 {
                     CalcPlayerWhenDelete();
-                    result = new Tuple<int, string>(1, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do not lie;");
+                    result = new Tuple<int, string>(1, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do not lie");
                 }
             }
             else if (allCardsIsCorrect && !iBelieve)
@@ -108,7 +108,7 @@
 
                 if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = new Tuple<int, string>(5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayerName} do not lie;");
+                    result = new Tuple<int, string>(5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayerName} do not lie");
                 }
                 else if (Players.Single(x => x.Name == NextMovePlayerName).PlayersCards.Count > 0)
                 {
@@ -116,13 +116,13 @@
                     PlayersWhoWin.AddRange(plWithNoCards);
                     Players.RemoveAll(x => x.PlayersCards.Count == 0);
 
-                    result = new Tuple<int, string>(2, $"{NextMovePlayerName} player make next move, player {PreviousMovePlayerName} do not lie;");
+                    result = new Tuple<int, string>(2, $"{NextMovePlayerName} player make next move, player {PreviousMovePlayerName} do not lie");
                     CalcPlayer();
                 }
                 else
                 {
                     CalcPlayerWhenDelete();
-                    result = new Tuple<int, string>(2, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do not lie;");
+                    result = new Tuple<int, string>(2, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do not lie");
                 }
             }
             else if (!allCardsIsCorrect && iBelieve)
@@ -131,7 +131,7 @@
 
                 if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = new Tuple<int, string>(5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayerName} do lie;");
+                    result = new Tuple<int, string>(5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayerName} do lie");
                 }
                 else if (Players.Single(x => x.Name == NextMovePlayerName).PlayersCards.Count > 0)
                 {
@@ -139,13 +139,13 @@
                     PlayersWhoWin.AddRange(plWithNoCards);
                     Players.RemoveAll(x => x.PlayersCards.Count == 0);
 
-                    result = new Tuple<int, string>(3, $"{NextMovePlayerName} player make next move, player {PreviousMovePlayerName} dot lie;");
+                    result = new Tuple<int, string>(3, $"{NextMovePlayerName} player make next move, player {PreviousMovePlayerName} dot lie");
                     CalcPlayer();
                 }
                 else
                 {
                     CalcPlayerWhenDelete();
-                    result = new Tuple<int, string>(3, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do lie;");
+                    result = new Tuple<int, string>(3, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do lie");
                 }
             }
             else
@@ -154,7 +154,7 @@
 
                 if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = new Tuple<int, string>(5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayerName} do lie;");
+                    result = new Tuple<int, string>(5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayerName} do lie");
                 }
                 else if (Players.Single(x => x.Name == CurrentMovePlayerName).PlayersCards.Count > 0)
                 {
@@ -164,12 +164,12 @@
                     Players.RemoveAll(x => x.PlayersCards.Count == 0);
                     NextMovePlayerName = Players[Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayerName)) + 1 % Players.Count].Name;
 
-                    result = new Tuple<int, string>(4, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do lie;");
+                    result = new Tuple<int, string>(4, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do lie");
                 }
                 else
                 {
                     CalcPlayerWhenDelete();
-                    result = new Tuple<int, string>(4, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do lie;");
+                    result = new Tuple<int, string>(4, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do lie");
                 }
             }
 
