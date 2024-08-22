@@ -44,15 +44,15 @@ namespace BelieveOrNotBelieveGameServer.Hubs
 
                 if (Convert.ToInt32(numOfCard) == 24)
                 {
-                    values = ["9", "10", "Jack", "Queen", "King", "Ace"];
+                    values = ["9", "10", "Jack", "Queen", "King"];
                 }
                 else if (Convert.ToInt32(numOfCard) == 36)
                 {
-                    values = ["6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"];
+                    values = ["6", "7", "8", "9", "10", "Jack", "Queen", "King"];
                 }
                 else
                 {
-                    values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King", "Ace"];
+                    values = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"];
                 }
 
                 await Clients.All.SendAsync("ReceiveMakeMoveValues", values);
