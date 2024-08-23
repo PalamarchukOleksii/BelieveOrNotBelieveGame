@@ -7,13 +7,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSignalR()
-    .AddHubOptions<GameHub>(options =>
-    {
-        options.KeepAliveInterval = TimeSpan.FromMinutes(4);
-        options.ClientTimeoutInterval = TimeSpan.FromMinutes(2);
-    });
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ClientCors", policy =>

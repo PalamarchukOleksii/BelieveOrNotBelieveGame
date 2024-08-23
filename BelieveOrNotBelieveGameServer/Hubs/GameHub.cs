@@ -39,6 +39,7 @@ namespace BelieveOrNotBelieveGameServer.Hubs
                 await SendInfoAboutOpponents();
 
                 await Clients.Client(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).PlayerConnectionId).SendAsync("ReceiveStartMove", "You start the game");
+                await Clients.AllExcept(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).PlayerConnectionId).SendAsync("ReceiveCurrentMovePlayer", $"{GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).Name} make move");
 
                 string[] values;
 
@@ -76,10 +77,12 @@ namespace BelieveOrNotBelieveGameServer.Hubs
                 if (nextPl.PlayersCards.Count == 0)
                 {
                     await Clients.Client(nextPl.PlayerConnectionId).SendAsync("ReceiveNextAssume", "You make assume");
+                    await Clients.AllExcept(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).PlayerConnectionId).SendAsync("ReceiveCurrentMovePlayer", $"{GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).Name} make move");
                 }
                 else
                 {
                     await Clients.Client(nextPl.PlayerConnectionId).SendAsync("ReceiveNextMoveAssume", "You make assume or move");
+                    await Clients.AllExcept(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).PlayerConnectionId).SendAsync("ReceiveCurrentMovePlayer", $"{GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).Name} make assume or move");
                 }
 
                 await Clients.All.SendAsync("ReceiveCardOnTableCount", GameTable.CardsOnTable.Count);
@@ -109,6 +112,7 @@ namespace BelieveOrNotBelieveGameServer.Hubs
                 {
                     await Clients.All.SendAsync("ReceiveAssume", result.Item2);
                     await Clients.Client(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).PlayerConnectionId).SendAsync("ReceiveFirstMove", "You make move");
+                    await Clients.AllExcept(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).PlayerConnectionId).SendAsync("ReceiveCurrentMovePlayer", $"{GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).Name} make move");
                 }
 
                 await SendPlayersCards();

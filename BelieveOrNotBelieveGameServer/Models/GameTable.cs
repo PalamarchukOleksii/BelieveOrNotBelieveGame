@@ -162,7 +162,7 @@
                     PlayersWhoWin.AddRange(plWithNoCards);
 
                     Players.RemoveAll(x => x.PlayersCards.Count == 0);
-                    NextMovePlayerName = Players[Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayerName)) + 1 % Players.Count].Name;
+                    NextMovePlayerName = Players[(Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayerName)) + 1) % Players.Count].Name;
 
                     result = new Tuple<int, string>(4, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do lie");
                 }
