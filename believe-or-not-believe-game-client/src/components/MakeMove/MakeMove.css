@@ -9,6 +9,7 @@
   padding: 15px;
   right: 0;
   bottom: -3px;
+  z-index: 1;
 }
 
 h2 {

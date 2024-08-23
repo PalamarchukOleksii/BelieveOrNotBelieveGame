@@ -7,13 +7,15 @@ function OpponentsCard({ count }) {
   return (
     <div className="opponent-cards">
       {Array.from({ length: count }, (_, index) => (
-        <img
-          key={index}
-          src="src/assets/CardBack.svg"
-          alt="Card"
-          className="opponents-card-image"
-          style={{ marginRight }}
-        />
+        <div>
+          <img
+            key={index}
+            src="src/assets/CardBack.svg"
+            alt="Card"
+            className="opponents-card-image"
+            style={{ marginRight }}
+          />
+        </div>
       ))}
     </div>
   );
