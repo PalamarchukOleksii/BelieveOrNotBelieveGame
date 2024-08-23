@@ -1,10 +1,8 @@
 import React from "react";
 import "./OpponentsCard.css";
 
-const CARDSIZE = 60;
-
 function OpponentsCard({ count }) {
-  const marginRight = -CARDSIZE + 150 / (count - 1) - CARDSIZE / (count - 1);
+  const marginRight = -60 + 150 / (count - 1) - 60 / (count - 1);
 
   return (
     <div className="opponent-cards">

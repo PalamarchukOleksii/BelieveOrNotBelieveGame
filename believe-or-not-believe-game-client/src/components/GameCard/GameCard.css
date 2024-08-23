@@ -6,7 +6,6 @@
   overflow: hidden;
   transition: transform 0.5s ease;
   position: relative;
-  z-index: 1;
 }
 
 .card.selected {
@@ -17,17 +16,9 @@
   overflow: hidden;
   transition: transform 0.5s ease;
   position: relative;
-  z-index: 1;
   transform: translateY(-100px);
 }
 
 .card:hover {
-  z-index: 1;
   transform: translateY(-100px);
-}
-
-.card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
