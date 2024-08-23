@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using BelieveOrNotBelieveGameServer.Models;
-using BelieveOrNotBelieveGameServer.Dtos;
 using BelieveOrNotBelieveGameServer.Application.Game.Helpers;
 using BelieveOrNotBelieveGameServer.Common.Constants;
+using BelieveOrNotBelieveGameServer.Common.Helpers;
 
 namespace BelieveOrNotBelieveGameServer.Application.Game
 {
@@ -27,7 +27,7 @@ namespace BelieveOrNotBelieveGameServer.Application.Game
             }
         }
 
-        public async Task StartGame(string numOfCard)
+        public async Task StartGame(string numOfCard, Bot bot)//Add bot settings
         {
             GameTable.Players.Single(x => x.PlayerConnectionId == Context.ConnectionId).StartGame = true;
             if (GameTable.Players.Count == 1)
@@ -42,7 +42,7 @@ namespace BelieveOrNotBelieveGameServer.Application.Game
                 await GameInfoHelper.SendPlayersCards(GameTable, Clients);
                 await SendInfoAboutOpponentsAsync();
 
-                await Clients.Client(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).PlayerConnectionId).SendAsync("ReceiveStartMove", "You start the game");
+                await Clients.Client(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayer.Name).PlayerConnectionId).SendAsync("ReceiveStartMove", "You start the game");
                 string[] values = Convert.ToInt32(numOfCard) switch
                 {
                     24 => CardConstants.Values24,
@@ -56,7 +56,7 @@ namespace BelieveOrNotBelieveGameServer.Application.Game
         public async Task MakeMove(string cardsValue, string cardsId)
         {
             Player pl = GameTable.Players.Single(x => x.PlayerConnectionId == Context.ConnectionId);
-            if (pl.PlayersCards.Count > 0 && pl.Name == GameTable.CurrentMovePlayerName && pl.CheckIfPlayerHaveSomeCards(cardsId))
+            if (pl.PlayersCards.Count > 0 && pl.Name == GameTable.CurrentMovePlayer.Name && PlayerHelper.CheckIfPlayerHaveSomeCards(pl, cardsId))
             {
                 string playerName = pl.Name;
                 Move playerMove = new Move(playerName, cardsValue, cardsId);
@@ -65,7 +65,7 @@ namespace BelieveOrNotBelieveGameServer.Application.Game
 
                 await Clients.All.SendAsync("RecieveMove", $"{playerName} throw {playerMove.CardsId.Count} {playerMove.CardValue}");
 
-                Player nextPl = GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName);
+                Player nextPl = GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayer.Name);
 
                 if (nextPl.PlayersCards.Count == 0)
                 {
@@ -89,7 +89,7 @@ namespace BelieveOrNotBelieveGameServer.Application.Game
 
         public async Task MakeAssume(bool iBelieve)
         {
-            if (GameTable.Players.Single(x => x.PlayerConnectionId == Context.ConnectionId).Name == GameTable.CurrentMovePlayerName)
+            if (GameTable.Players.Single(x => x.PlayerConnectionId == Context.ConnectionId).Name == GameTable.CurrentMovePlayer.Name)
             {
                 (int ResultId, string ClientMessage) = GameTable.MakeAssume(iBelieve);
 
@@ -102,7 +102,7 @@ namespace BelieveOrNotBelieveGameServer.Application.Game
                 else
                 {
                     await Clients.All.SendAsync(ReceiveAssume, ClientMessage);
-                    await Clients.Client(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayerName).PlayerConnectionId).SendAsync("ReceiveFirstMove", "You make move");
+                    await Clients.Client(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayer.Name).PlayerConnectionId).SendAsync("ReceiveFirstMove", "You make move");
                 }
 
                 await GameInfoHelper.SendPlayersCards(GameTable, Clients);
