@@ -1,4 +1,4 @@
-using BelieveOrNotBelieveGameServer.Hubs;
+using BelieveOrNotBelieveGameServer.Application.Game;
 
 var builder = WebApplication.CreateBuilder(args);
 
