@@ -205,7 +205,7 @@ namespace BelieveOrNotBelieveGameServer.Models
             PreviousMovePlayer = CurrentMovePlayer;
             CurrentMovePlayer = NextMovePlayer;
 
-            Position = (Position + 1) % Players.Count;
+            Position = Players.IndexOf(CurrentMovePlayer);
 
             NextMovePlayer = Players[(Position + 1) % Players.Count];
         }
