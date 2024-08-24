@@ -23,7 +23,7 @@ function CardHeap({ count, style = {} }) {
             return {
               style: {
                 top: `${position.top}px`,
-                left: `${position.left - Number(style.left)}px`,
+                left: `${position.left}px`,
                 transform: `rotate(${Math.random() * 90 - 45}deg)`,
                 zIndex: prevCards.length + index,
               },

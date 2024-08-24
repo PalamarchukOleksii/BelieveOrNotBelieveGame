@@ -5,7 +5,7 @@
   justify-content: center;
   gap: 15px;
   position: fixed;
-  background-color: #867e6d;
+  background-color: #333;
   width: 200px;
   bottom: 0px;
   left: 50%;
@@ -24,6 +24,7 @@
 }
 
 label {
+  color: whitesmoke;
   font-size: 18px;
   font-weight: bold;
 }

@@ -7,7 +7,7 @@ function PlayersCard({ cards, onCardClick, cardsForMove }) {
     -168 + 1000 / (cards.length - 1) - 168 / (cards.length - 1);
 
   return (
-    <div className="palyer-cards">
+    <div className="player-cards">
       {cards?.map((card) => (
         <GameCard
           key={card.id}

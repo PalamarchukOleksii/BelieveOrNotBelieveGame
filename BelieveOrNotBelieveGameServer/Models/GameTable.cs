@@ -168,7 +168,7 @@ namespace BelieveOrNotBelieveGameServer.Models
                     PlayersWhoWin.AddRange(plWithNoCards);
 
                     Players.RemoveAll(x => x.PlayersCards.Count == 0);
-                    NextMovePlayer = Players[Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayer.Name)) + 1 % Players.Count];
+                    NextMovePlayer = Players[(Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayer.Name)) + 1) % Players.Count];
 
                     result = (4, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do lie");
                 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { HubConnectionBuilder } from "@microsoft/signalr";
 import GameTable from "./pages/GameTable";
 import Startup from "./pages/Startup";
 import "./App.css";
@@ -10,9 +10,6 @@ function StartConnection() {
     const connection = new HubConnectionBuilder()
       .withUrl("http://26.248.118.214:7075/game-hub")
       .build();
-
-    connection.serverTimeoutInMilliseconds = 120000;
-    connection.keepAliveIntervalInMilliseconds = 240000;
 
     connection.start().catch((err) => console.error(err));
 
