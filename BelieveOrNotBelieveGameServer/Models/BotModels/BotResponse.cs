@@ -10,6 +10,8 @@ public class BotResponse
         Move = move;
     }
 
+    public BotResponse() {}
+
     public bool IsNotBelieve { get; set; } = true;
 
     public bool IsBelieve { get; set; } = false;

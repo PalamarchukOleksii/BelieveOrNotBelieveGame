@@ -1,6 +1,13 @@
 using BelieveOrNotBelieveGameServer.Application.Game;
+using BelieveOrNotBelieveGameServer.Configuration;
+using Hellang.Middleware.ProblemDetails;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services
+    .InstallServices(
+        builder.Configuration,
+        typeof(Program).Assembly);
 
 builder.Services.AddControllers();
 
@@ -22,7 +29,7 @@ builder.Services.AddCors(options =>
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
-});
+    });
 });
 
 var app = builder.Build();
@@ -33,7 +40,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
+app.UseProblemDetails();
 
 app.UseAuthorization();
 
@@ -41,6 +49,12 @@ app.MapControllers();
 
 app.MapHub<GameHub>("game-hub");
 
-app.UseCors("ClientCors");
+//app.UseCors("ClientCors");
+app.UseCors(x => x
+    .AllowAnyOrigin()
+    .AllowAnyMethod()
+    .AllowAnyHeader());
 
-app.Run("http://26.248.118.214:7075");
+app.Run();
+
+//app.Run("http://26.248.118.214:7075");

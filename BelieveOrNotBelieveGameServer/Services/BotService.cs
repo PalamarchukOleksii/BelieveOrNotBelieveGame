@@ -2,7 +2,7 @@
 using BelieveOrNotBelieveGameServer.Models;
 using BelieveOrNotBelieveGameServer.Models.BotModels;
 using BelieveOrNotBelieveGameServer.Services.Abstraction;
-using System.Xml;
+using Hellang.Middleware.ProblemDetails;
 
 namespace BelieveOrNotBelieveGameServer.Services;
 
@@ -10,7 +10,7 @@ public class BotService : IBotService
 {
     private decimal probapility = 0;
 
-    public void MakeMove(GameTable gameTable)
+    public BotResponse MakeMove(GameTable gameTable)
     {
         var previousPlayer = gameTable.CurrentMovePlayer;
         var nextPlayer = gameTable.NextMovePlayer;
@@ -18,12 +18,26 @@ public class BotService : IBotService
 
         if(!currentPlayer.IsBot || currentPlayer.BotDifficulty == BotDificulty.ItIsNotABot)
         {
-            throw new Exception($"Error! Bot can't move instead of player {currentPlayer.Name}");
+            throw new ProblemDetailsException(
+                StatusCodes.Status400BadRequest, 
+                $"Error! Bot can't move instead of player {currentPlayer.Name}");
         }
 
         (var otherPlayers, var cardForDiscard) = ConfigureBotInfo(gameTable);
 
         var isNotFirstMove = gameTable.CardsOnTable.Any();
+        var move = gameTable.Move;
+
+        if (isNotFirstMove && move is null)
+        {
+            throw new ProblemDetailsException(StatusCodes.Status400BadRequest, "Move can't be null");
+        }
+
+        var response = new BotResponse();
+
+        //var 
+
+        return response;
     }
 
     private (List<Player> otherPlayers, List<PlayingCard> cardForDiscard) ConfigureBotInfo(GameTable gameTable)
