@@ -1,13 +1,16 @@
-﻿namespace BelieveOrNotBelieveGameServer.Models
+﻿using BelieveOrNotBelieveGameServer.Common.Helpers;
+
+namespace BelieveOrNotBelieveGameServer.Models
 {
     public class GameTable
     {
         public List<Player> Players { get; set; } = new List<Player>();
         public List<PlayingCard> CardsOnTable { get; set; } = new List<PlayingCard>();
+        public List<PlayingCard> CardsForDiscard { get; set; } = new List<PlayingCard>();
         public Move? Move { get; set; }
-        public string CurrentMovePlayerName { get; set; } = string.Empty;
-        public string PreviousMovePlayerName { get; set; } = string.Empty;
-        public string NextMovePlayerName { get; set; } = string.Empty;
+        public Player CurrentMovePlayer { get; set; } = new Player();
+        public Player PreviousMovePlayer { get; set; } = new Player();
+        public Player NextMovePlayer { get; set; } = new Player();
         private int Position { get; set; } = 0;
         public bool GameStarted { get; set; } = false;
         public int CountCardsForDiscard {  get; set; } = 0;
@@ -17,20 +20,22 @@
         {
             GameStarted = true;
             CardsDeck deck = new CardsDeck(numOfCards);
-            deck.ShuffleCards();
-            deck.GiveCardsToPlayers(Players);
+            CardsDeckHelper.ShuffleCards(deck);
+            //deck.ShuffleCards();
+            CardsDeckHelper.GiveCardsToPlayers(deck, Players);
+            //deck.GiveCardsToPlayers(Players);
 
             Random rnd = new Random();
             Position = rnd.Next(0, Players.Count - 1);
 
-            CurrentMovePlayerName = Players[Position].Name;
+            CurrentMovePlayer = Players[Position];
             if (Position == Players.Count - 1)
             {
-                NextMovePlayerName = Players[0].Name;
+                NextMovePlayer = Players[0];
             }
             else
             {
-                NextMovePlayerName = Players[Position + 1].Name;
+                NextMovePlayer = Players[Position + 1];
             }
         }
 
@@ -60,14 +65,14 @@
             CalcPlayer();
         }
 
-        public Tuple<int, string> MakeAssume(bool iBelieve)
+        public (int ResultId, string ClientMessage) MakeAssume(bool iBelieve)
         {
             bool allCardsIsCorrect = true;
-            Tuple<int, string> result;
+            (int ResultId, string ClientMessage) result;
 
             for(int i = CardsOnTable.Count - 1; i >= CardsOnTable.Count - Move?.CardsId.Count; i--)
             {
-                if (CardsOnTable[i].CardValue != Move?.CardValue)
+                if (CardsOnTable[i].Value != Move?.CardValue)
                 {
                     allCardsIsCorrect = false;
                     break;
@@ -77,99 +82,100 @@
             if (allCardsIsCorrect && iBelieve)
             {
                 CountCardsForDiscard = CardsOnTable.Count;
+                CardsForDiscard.AddRange(CardsOnTable);
 
-                if (Players.TrueForAll(x => x.PlayersCards.Count == 0))
+                if (Players.TrueForAll(x => !x.PlayersCards.Any()))
                 {
-                    result = new Tuple<int, string>(5, $"Game over, {CurrentMovePlayerName} lose, player {PreviousMovePlayerName} do not lie");
+                    result = (5, $"Game over, {CurrentMovePlayer} lose, player {PreviousMovePlayer} do not lie");
                 }
                 else if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = new Tuple<int, string>(5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayerName} do not lie");
+                    result = (5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do not lie");
                 }
-                else if (Players.Single(x => x.Name == CurrentMovePlayerName).PlayersCards.Count > 0)
+                else if (Players.Single(x => x.Name == CurrentMovePlayer.Name).PlayersCards.Count > 0)
                 {
                     List<Player> plWithNoCards = Players.Where(x => x.PlayersCards.Count == 0).ToList();
                     PlayersWhoWin.AddRange(plWithNoCards);
 
                     Players.RemoveAll(x => x.PlayersCards.Count == 0);
-                    NextMovePlayerName = Players[(Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayerName)) + 1) % Players.Count].Name;
+                    NextMovePlayer = Players[(Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayer.Name)) + 1) % Players.Count];
 
-                    result = new Tuple<int, string>(1, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do not lie");
+                    result = (1, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do not lie");
                 }
                 else
                 {
                     CalcPlayerWhenDelete();
-                    result = new Tuple<int, string>(1, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do not lie");
+                    result = (1, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do not lie");
                 }
             }
             else if (allCardsIsCorrect && !iBelieve)
             {
-                Players.Single(x => x.Name == CurrentMovePlayerName).PlayersCards.AddRange(CardsOnTable);
+                Players.Single(x => x.Name == CurrentMovePlayer.Name).PlayersCards.AddRange(CardsOnTable);
 
                 if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = new Tuple<int, string>(5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayerName} do not lie");
+                    result = (5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do not lie");
                 }
-                else if (Players.Single(x => x.Name == NextMovePlayerName).PlayersCards.Count > 0)
+                else if (Players.Single(x => x.Name == NextMovePlayer.Name).PlayersCards.Count > 0)
                 {
                     List<Player> plWithNoCards = Players.Where(x => x.PlayersCards.Count == 0).ToList();
                     PlayersWhoWin.AddRange(plWithNoCards);
                     Players.RemoveAll(x => x.PlayersCards.Count == 0);
 
-                    result = new Tuple<int, string>(2, $"{NextMovePlayerName} player make next move, player {PreviousMovePlayerName} do not lie");
+                    result = (2, $"{NextMovePlayer} player make next move, player {PreviousMovePlayer} do not lie");
                     CalcPlayer();
                 }
                 else
                 {
                     CalcPlayerWhenDelete();
-                    result = new Tuple<int, string>(2, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do not lie");
+                    result = (2, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do not lie");
                 }
             }
             else if (!allCardsIsCorrect && iBelieve)
             {
-                Players.Single(x => x.Name == CurrentMovePlayerName).PlayersCards.AddRange(CardsOnTable);
+                Players.Single(x => x.Name == CurrentMovePlayer.Name).PlayersCards.AddRange(CardsOnTable);
 
                 if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = new Tuple<int, string>(5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayerName} do lie");
+                    result = new (5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do lie");
                 }
-                else if (Players.Single(x => x.Name == NextMovePlayerName).PlayersCards.Count > 0)
+                else if (Players.Single(x => x.Name == NextMovePlayer.Name).PlayersCards.Count > 0)
                 {
                     List<Player> plWithNoCards = Players.Where(x => x.PlayersCards.Count == 0).ToList();
                     PlayersWhoWin.AddRange(plWithNoCards);
                     Players.RemoveAll(x => x.PlayersCards.Count == 0);
 
-                    result = new Tuple<int, string>(3, $"{NextMovePlayerName} player make next move, player {PreviousMovePlayerName} dot lie");
+                    result = new (3, $"{NextMovePlayer} player make next move, player {PreviousMovePlayer} dot lie");
                     CalcPlayer();
                 }
                 else
                 {
                     CalcPlayerWhenDelete();
-                    result = new Tuple<int, string>(3, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do lie");
+                    result = new (3, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do lie");
                 }
             }
             else
             {
-                Players.Single(x => x.Name == PreviousMovePlayerName).PlayersCards.AddRange(CardsOnTable);
+                Players.Single(x => x.Name == PreviousMovePlayer.Name).PlayersCards.AddRange(CardsOnTable);
 
                 if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = new Tuple<int, string>(5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayerName} do lie");
+                    result = (5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do lie");
                 }
-                else if (Players.Single(x => x.Name == CurrentMovePlayerName).PlayersCards.Count > 0)
+                else if (Players.Single(x => x.Name == CurrentMovePlayer.Name).PlayersCards.Count > 0)
                 {
                     List<Player> plWithNoCards = Players.Where(x => x.PlayersCards.Count == 0).ToList();
                     PlayersWhoWin.AddRange(plWithNoCards);
 
                     Players.RemoveAll(x => x.PlayersCards.Count == 0);
-                    NextMovePlayerName = Players[(Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayerName)) + 1) % Players.Count].Name;
+                    NextMovePlayer = Players[(Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayer.Name)) + 1) % Players.Count];
 
-                    result = new Tuple<int, string>(4, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do lie");
+                    result = (4, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do lie");
                 }
                 else
                 {
                     CalcPlayerWhenDelete();
-                    result = new Tuple<int, string>(4, $"{CurrentMovePlayerName} player make next move, player {PreviousMovePlayerName} do lie");
+                    result = (4, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do lie");
                 }
             }
 
@@ -181,7 +187,6 @@
         {
             GameStarted = false;
             Position = CountCardsForDiscard = 0;
-            CurrentMovePlayerName = PreviousMovePlayerName = NextMovePlayerName = string.Empty;
             Move = null;
             CardsOnTable = new List<PlayingCard>();
 
@@ -198,12 +203,12 @@
 
         private void CalcPlayer()
         {
-            PreviousMovePlayerName = CurrentMovePlayerName;
-            CurrentMovePlayerName = NextMovePlayerName;
+            PreviousMovePlayer = CurrentMovePlayer;
+            CurrentMovePlayer = NextMovePlayer;
 
-            Position = (Position + 1) % Players.Count;
+            Position = Players.IndexOf(CurrentMovePlayer);
 
-            NextMovePlayerName = Players[(Position + 1) % Players.Count].Name;
+            NextMovePlayer = Players[(Position + 1) % Players.Count];
         }
 
         private void CalcPlayerWhenDelete()
@@ -211,7 +216,7 @@
             List<Player> plWithNoCards = Players.Where(x => x.PlayersCards.Count == 0).ToList();
             PlayersWhoWin.AddRange(plWithNoCards);
 
-            int currentPlIndex = Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayerName));
+            int currentPlIndex = Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayer.Name));
             int nextPlIndex = 0;
 
             for (int i = currentPlIndex + 1 % Players.Count, c = 0; c < Players.Count; c++, i = (i + 1) % Players.Count)
@@ -223,11 +228,11 @@
                 }
             }
 
-            CurrentMovePlayerName = Players[nextPlIndex].Name;
+            CurrentMovePlayer = Players[nextPlIndex];
             Players.RemoveAll(x => x.PlayersCards.Count == 0);
 
-            NextMovePlayerName = Players[(Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayerName)) + 1) % Players.Count].Name;
-            Position = Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayerName));
+            NextMovePlayer = Players[(Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayer.Name)) + 1) % Players.Count];
+            Position = Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayer.Name));
         }
     }
 }
