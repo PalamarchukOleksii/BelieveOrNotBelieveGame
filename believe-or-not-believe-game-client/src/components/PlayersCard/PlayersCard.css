@@ -1,7 +1,7 @@
-.palyer-cards {
+.player-cards {
   display: flex;
   position: fixed;
-  background-color: #867e6d;
+  background-color: #333;
   width: 1000px;
   bottom: -80px;
   left: 50%;

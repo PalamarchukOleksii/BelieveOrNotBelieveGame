@@ -8,6 +8,7 @@ import CardHeap from "../components/CardHeap/CardHeap";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import LastMovePanel from "../components/LastMovePanel/LastMovePanel";
 
 function GameTable({ connection }) {
   const [gameStarted, setGameStarted] = useState(false);
@@ -20,6 +21,7 @@ function GameTable({ connection }) {
   const [cardsInDiscardCount, setCardsInDiscardCount] = useState(0);
   const [canChooseValue, setCanChooseValue] = useState(false);
   const [makeMoveValues, setMakeMoveValues] = useState([]);
+  const [lastMoveInfo, setLastMoveInfo] = useState("");
 
   const notifi = (msg) => {
     toast(msg);
@@ -59,6 +61,8 @@ function GameTable({ connection }) {
         console.log(msg);
         notifi(msg);
 
+        setLastMoveInfo(msg);
+
         setCardsForMove([]);
 
         const lastWord = msg.split(" ").pop();
@@ -93,6 +97,7 @@ function GameTable({ connection }) {
         setCanMakeAssume(false);
         setCardsInDiscardCount(0);
         setCanChooseValue(false);
+        setLastMoveInfo("");
       });
 
       connection.on("ReceiveAssume", (msg) => {
@@ -103,6 +108,7 @@ function GameTable({ connection }) {
         setCanMakeAssume(false);
         setCanMakeMove(false);
         setCanChooseValue(false);
+        setLastMoveInfo("");
       });
 
       connection.on("RecieveNotMove", (msg) => {
@@ -126,6 +132,14 @@ function GameTable({ connection }) {
       connection.on("ReceiveMakeMoveValues", (msg) => {
         setMakeMoveValues(msg);
       });
+
+      connection.on("ReceiveCurrentMovePlayer", (msg) => {
+        notifi(msg);
+      });
+
+      connection.on("ReceiveJoin", (msg) => {
+        notifi(msg);
+      });
     } catch (e) {
       console.log(e);
     }
@@ -145,6 +159,7 @@ function GameTable({ connection }) {
         connection.off("ReceiveNextAssume");
         connection.off("ReceiveDiscardCardsCount");
         connection.off("ReceiveMakeMoveValues");
+        connection.off("ReceiveCurrentMovePlayer");
       }
     };
   }, [connection, gameStarted]);
@@ -194,6 +209,7 @@ function GameTable({ connection }) {
         theme="dark"
         transition:Slide
       />
+      {lastMoveInfo && <LastMovePanel info={lastMoveInfo} />}
       {!gameStarted ? (
         <StartGame onStart={handleStartGame} />
       ) : (

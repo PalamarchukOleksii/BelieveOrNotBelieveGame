@@ -44,6 +44,10 @@ namespace BelieveOrNotBelieveGameServer.Application.Game
                 await SendInfoAboutOpponentsAsync();
 
                 await Clients.Client(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayer.Name).PlayerConnectionId).SendAsync("ReceiveStartMove", "You start the game");
+                await Clients.AllExcept(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayer.Name).PlayerConnectionId).SendAsync("ReceiveCurrentMovePlayer", $"{GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayer.Name).Name} make move");
+
+                if (Convert.ToInt32(numOfCard) == 24)
+                await Clients.Client(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayer.Name).PlayerConnectionId).SendAsync("ReceiveStartMove", "You start the game");
                 string[] values = Convert.ToInt32(numOfCard) switch
                 {
                     24 => CardConstants.Values24,
@@ -70,11 +74,28 @@ namespace BelieveOrNotBelieveGameServer.Application.Game
 
                 if (nextPl.PlayersCards.Count == 0)
                 {
-                    await Clients.Client(nextPl.PlayerConnectionId).SendAsync("ReceiveNextAssume", "You make assume");
+                    await Clients
+                        .Client(nextPl.PlayerConnectionId)
+                        .SendAsync("ReceiveNextAssume", "You make assume");
+                    
+                    await Clients.AllExcept(
+                        GameTable.Players
+                        .Single(x => x.Name == GameTable.CurrentMovePlayer.Name)
+                        .PlayerConnectionId)
+                        .SendAsync("ReceiveCurrentMovePlayer", $"{GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayer.Name).Name} make move");
                 }
                 else
                 {
-                    await Clients.Client(nextPl.PlayerConnectionId).SendAsync("ReceiveNextMoveAssume", "You make assume or move");
+                    await Clients
+                        .Client(nextPl.PlayerConnectionId)
+                        .SendAsync("ReceiveNextMoveAssume", "You make assume or move");
+                    
+                    await Clients
+                        .AllExcept(
+                        GameTable.Players
+                        .Single(x => x.Name == GameTable.CurrentMovePlayer.Name)
+                        .PlayerConnectionId)
+                        .SendAsync("ReceiveCurrentMovePlayer", $"{GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayer.Name).Name} make assume or move");
                 }
 
                 await Clients.All.SendAsync("ReceiveCardOnTableCount", GameTable.CardsOnTable.Count);
@@ -102,8 +123,17 @@ namespace BelieveOrNotBelieveGameServer.Application.Game
                 }
                 else
                 {
-                    await Clients.All.SendAsync(ReceiveAssume, ClientMessage);
-                    await Clients.Client(GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayer.Name).PlayerConnectionId).SendAsync("ReceiveFirstMove", "You make move");
+                    await Clients.All.SendAsync("ReceiveAssume", ClientMessage);
+                    await Clients.Client(
+                        GameTable.Players.
+                        Single(x => x.Name == GameTable.CurrentMovePlayer.Name)
+                        .PlayerConnectionId)
+                        .SendAsync("ReceiveFirstMove", "You make move");
+                    await Clients.AllExcept(
+                        GameTable.Players
+                        .Single(x => x.Name == GameTable.CurrentMovePlayer.Name)
+                        .PlayerConnectionId)
+                        .SendAsync("ReceiveCurrentMovePlayer", $"{GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayer.Name).Name} make move");
                 }
 
                 await GameInfoHelper.SendPlayersCards(GameTable, Clients);

@@ -1,5 +1,6 @@
 .opponent-cards {
   display: flex;
+  width: 150px;
 }
 
 .opponents-card-image {

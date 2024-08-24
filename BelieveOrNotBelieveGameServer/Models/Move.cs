@@ -16,5 +16,12 @@
                 CardsId.Add(Convert.ToInt32(id));
             }
         }
+
+        public Move(string playerName, string cardValue, List<int> cardsId)
+        {
+            PlayerName = playerName;
+            CardValue = cardValue;
+            CardsId = cardsId;
+        }
     }
 }
