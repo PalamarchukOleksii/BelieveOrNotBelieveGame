@@ -72,7 +72,7 @@ namespace BelieveOrNotBelieveGameServer.Models
 
             for(int i = CardsOnTable.Count - 1; i >= CardsOnTable.Count - Move?.CardsId.Count; i--)
             {
-                if (CardsOnTable[i].CardValue != Move?.CardValue)
+                if (CardsOnTable[i].Value != Move?.CardValue)
                 {
                     allCardsIsCorrect = false;
                     break;

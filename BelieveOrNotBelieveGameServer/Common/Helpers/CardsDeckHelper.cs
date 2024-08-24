@@ -23,7 +23,7 @@ public static class CardsDeckHelper
             {
                 foreach (var value in values)
                 {
-                    cardsDeck.Cards.Add(new PlayingCard { Id = count++, CardSuit = suit, CardValue = value });
+                    cardsDeck.Cards.Add(new PlayingCard { Id = count++, Suit = suit, Value = value });
                 }
             }
     }

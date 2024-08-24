@@ -2,7 +2,7 @@
 
 public class BotResponse
 {
-    public BotResponse(bool isNotBelieve, bool isBelieve, bool isMakeMove, Move? move)
+    public BotResponse(bool isBelieve, bool isNotBelieve, bool isMakeMove = false, Move? move = null)
     {
         IsNotBelieve = isNotBelieve;
         IsBelieve = isBelieve;
@@ -10,7 +10,17 @@ public class BotResponse
         Move = move;
     }
 
+    public BotResponse(Move move)
+    {
+        IsNotBelieve = false;
+        IsBelieve = false;
+        IsMakeMove = true;
+        Move = move;
+    }
+
     public BotResponse() {}
+
+    public bool IsAssuming => IsNotBelieve == true || IsBelieve == true;
 
     public bool IsNotBelieve { get; set; } = true;
 
