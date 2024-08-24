@@ -1,4 +1,4 @@
-﻿namespace BelieveOrNotBelieveGameServer.Models;
+﻿namespace BelieveOrNotBelieveGameServer.Models.BotModels;
 
 public enum BotDificulty
 {

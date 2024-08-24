@@ -1,4 +1,6 @@
-﻿namespace BelieveOrNotBelieveGameServer.Models
+﻿using BelieveOrNotBelieveGameServer.Models.BotModels;
+
+namespace BelieveOrNotBelieveGameServer.Models
 {
     public class Player
     {
@@ -10,7 +12,7 @@
 
         public bool StartGame { get; set; } = false;
 
-        public BotDificulty BotDificulty { get; set; } = BotDificulty.ItIsNotABot;
+        public BotDificulty BotDifficulty { get; set; } = BotDificulty.ItIsNotABot;
 
         public bool IsBot { get; set; } = false;
     }

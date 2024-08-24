@@ -3,6 +3,7 @@ using BelieveOrNotBelieveGameServer.Models;
 using BelieveOrNotBelieveGameServer.Application.Game.Helpers;
 using BelieveOrNotBelieveGameServer.Common.Constants;
 using BelieveOrNotBelieveGameServer.Common.Helpers;
+using BelieveOrNotBelieveGameServer.Models.BotModels;
 
 namespace BelieveOrNotBelieveGameServer.Application.Game
 {

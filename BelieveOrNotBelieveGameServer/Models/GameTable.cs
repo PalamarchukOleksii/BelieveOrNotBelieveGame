@@ -82,8 +82,9 @@ namespace BelieveOrNotBelieveGameServer.Models
             if (allCardsIsCorrect && iBelieve)
             {
                 CountCardsForDiscard = CardsOnTable.Count;
+                CardsForDiscard.AddRange(CardsOnTable);
 
-                if (Players.TrueForAll(x => x.PlayersCards.Count == 0))
+                if (Players.TrueForAll(x => !x.PlayersCards.Any()))
                 {
                     result = (5, $"Game over, {CurrentMovePlayer} lose, player {PreviousMovePlayer} do not lie");
                 }
