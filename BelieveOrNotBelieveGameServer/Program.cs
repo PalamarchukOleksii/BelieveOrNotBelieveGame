@@ -33,7 +33,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseProblemDetails();
 
 app.UseAuthorization();
@@ -42,12 +42,6 @@ app.MapControllers();
 
 app.MapHub<GameHub>("game-hub");
 
-//app.UseCors("ClientCors");
-app.UseCors(x => x
-    .AllowAnyOrigin()
-    .AllowAnyMethod()
-    .AllowAnyHeader());
+app.UseCors("ClientCors");
 
 app.Run();
-
-//app.Run("http://26.248.118.214:7075");

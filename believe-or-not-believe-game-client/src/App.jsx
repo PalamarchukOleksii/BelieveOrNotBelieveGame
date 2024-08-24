@@ -8,7 +8,7 @@ import "./App.css";
 function StartConnection() {
   try {
     const connection = new HubConnectionBuilder()
-      .withUrl("http://26.248.118.214:7075/game-hub")
+      .withUrl("http://26.248.118.214:5250/game-hub")
       .build();
 
     connection.start().catch((err) => console.error(err));
