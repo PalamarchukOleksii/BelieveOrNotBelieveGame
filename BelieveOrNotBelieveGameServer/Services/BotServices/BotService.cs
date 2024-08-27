@@ -33,7 +33,7 @@ public class BotService : IBotService
                 $"Error! Bot can't move instead of player {bot.Name}");
         }
 
-        (var otherPlayers, var cardForDiscard) = ConfigureBotInfo(gameTable);
+        var botInfo = ConfigureBotInfo(gameTable);
 
         var isNotFirstMove = gameTable.CardsOnTable.Any();
 
@@ -44,15 +44,15 @@ public class BotService : IBotService
 
         if (isNotFirstMove)
         {
-            return _botNotFirstMoveService.MakeNotFirstMove(bot, otherPlayers, cardForDiscard, gameTable);
+            return _botNotFirstMoveService.MakeNotFirstMove(botInfo);
         }
         else
         {
-            return _botFirstMoveService.MakeFirstMove(bot, otherPlayers, cardForDiscard, gameTable);
+            return _botFirstMoveService.MakeFirstMove(botInfo);
         }
     }
 
-    private (List<Player> otherPlayers, List<PlayingCard> cardForDiscard) ConfigureBotInfo(GameTable gameTable)
+    private BotInfo ConfigureBotInfo(GameTable gameTable)
     {
         var botDifficulty = gameTable.CurrentMovePlayer.BotDifficulty;
 
@@ -76,6 +76,13 @@ public class BotService : IBotService
 
         var cardForDiscard = RandomHelper.GetRandomCardsFromListByBotDificulty(gameTable.CardsForDiscard, botDifficulty);
 
-        return (players, cardForDiscard);
+        return new BotInfo(
+            gameTable.CurrentMovePlayer,
+            players,
+            cardForDiscard,
+            gameTable.Move!,
+            gameTable.PreviousMovePlayer.Name,
+            gameTable.NextMovePlayer.Name
+            );
     }    
 }

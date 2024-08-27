@@ -8,39 +8,30 @@ namespace BelieveOrNotBelieveGameServer.Services.BotServices;
 
 public class BotNotFirstMoveService : IBotNotFirstMoveService
 {
-    public BotResponse MakeNotFirstMove(Player bot, List<Player> otherPlayers, List<PlayingCard> cardForDiscard, GameTable gameTable)
+    private readonly IBotMakeMoveService _botMakeMoveService;
+
+    public BotNotFirstMoveService(IBotMakeMoveService botMakeMoveService)
     {
-        var rnd = new Random();
-
-        var myCards = bot.PlayersCards;
-        var move = gameTable.Move!;
-        var cardValue = move.CardValue!;
-        var cardsNumber = move.CardsId.Count;
-
-        var allPlayersCards = otherPlayers.SelectMany(x => x.PlayersCards).ToList();
-
-        return MakeDecision(bot, allPlayersCards, myCards, cardForDiscard, cardValue, cardsNumber);
+        _botMakeMoveService = botMakeMoveService;
     }
 
-    private BotResponse MakeDecision(
-        Player bot, 
-        List<PlayingCard> allPlayersCards, 
-        List<PlayingCard> myCards, 
-        List<PlayingCard> cardForDiscard,
-        string cardValue, 
-        int countOfCardsInLastMove)
+    public BotResponse MakeNotFirstMove(BotInfo botInfo)
     {
+        var myCards = botInfo.Bot.PlayersCards;
+        var cardValue = botInfo.LastMove.CardValue!;
+        var countOfCardsInLastMove = botInfo.LastMove.CardsId.Count;
+                
         if (myCards.Any(c => c.Value == cardValue) 
-            || allPlayersCards.Any(c => c.Value == cardValue)
-            || cardForDiscard.Any(c => c.Value == cardValue))
+            || botInfo.AllPlayersCards.Any(c => c.Value == cardValue)
+            || botInfo.CardForDiscard.Any(c => c.Value == cardValue))
         {
             var mySameCardsCount = myCards.Where(c => c.Value == cardValue).Count();
-            var allPlayersSameCardsCount = allPlayersCards.Where(c => c.Value == cardValue).Count();
-            var cardForDiscardSameCardsCount = cardForDiscard.Where(c => c.Value == cardValue).Count();
+            var allPlayersSameCardsCount = botInfo.AllPlayersCards.Where(c => c.Value == cardValue).Count();
+            var cardForDiscardSameCardsCount = botInfo.AllPlayersCards.Where(c => c.Value == cardValue).Count();
             
-            return DesideToAssumeOrMakeMove(
-                bot, myCards, cardValue, 
-                mySameCardsCount + allPlayersSameCardsCount + countOfCardsInLastMove + cardForDiscardSameCardsCount > CardConstants.MaxCardsInOneMove);
+            var lieIsMostPosibleAssume = mySameCardsCount + allPlayersSameCardsCount + countOfCardsInLastMove + cardForDiscardSameCardsCount > CardConstants.MaxCardsInOneMove;
+
+            return DesideToAssumeOrMakeMove(botInfo, lieIsMostPosibleAssume);
         }
         else
         {
@@ -49,9 +40,7 @@ public class BotNotFirstMoveService : IBotNotFirstMoveService
     }
 
     private BotResponse DesideToAssumeOrMakeMove(
-        Player bot, 
-        List<PlayingCard> myCards, 
-        string cardValue,         
+        BotInfo botInfo,         
         bool lieIsMostPosibleAssume)
     {
         var isAssuming = RandomHelper.GenerateRandomBool();
@@ -65,43 +54,7 @@ public class BotNotFirstMoveService : IBotNotFirstMoveService
             return GenerateRandomAssume();
         }
 
-        var isToTellTruth = RandomHelper.GenerateRandomBool();
-        var cardsForMove = new List<PlayingCard>();
-
-        if(isToTellTruth && myCards.Any(c => c.Value == cardValue) )
-        {
-            cardsForMove = myCards.Where(x => x.Value == cardValue).ToList();
-        }
-        else
-        {
-            int numberOfCardsForMove = 1;
-                
-            var coeficientOfNumber = RandomHelper.GenerateRandomInt(10, 1);
-            if(coeficientOfNumber >= 5 && coeficientOfNumber < 9)
-            {
-                numberOfCardsForMove = 2;
-            }
-            else if (coeficientOfNumber == 9)
-            {
-                numberOfCardsForMove = 3;
-            }
-            else if (coeficientOfNumber == 10)
-            {
-                numberOfCardsForMove = 4;
-            }
-
-            cardsForMove = RandomHelper.GetRandomCardsFromList(myCards, numberOfCardsForMove);
-        }
-
-        return new BotResponse
-            (
-                new Move
-                (
-                    bot.Name,
-                    cardValue,
-                    cardsForMove.Select(x => x.Id).ToList()
-                )
-            );
+        return _botMakeMoveService.MakeMove(botInfo, false);
     }
 
     private BotResponse GenerateRandomAssume()
