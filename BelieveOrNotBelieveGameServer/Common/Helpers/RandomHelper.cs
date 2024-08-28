@@ -6,20 +6,45 @@ namespace BelieveOrNotBelieveGameServer.Common.Helpers;
 
 public static class RandomHelper
 {
+    private static readonly Random _random = new Random();
+
     public static bool GenerateRandomBool()
     {
-        var rnd = new Random();
-        return (rnd.Next(0, 1)) switch
-        {
-            1 => true,
-            _ => false
-        };
+        return _random.Next(2) == 1;
     }
 
     public static int GenerateRandomInt(int maxValue, int minValue = 0)
     {
-        var rnd = new Random();
-        return rnd.Next(minValue, maxValue);
+        return _random.Next(minValue, maxValue + 1);
+    }
+
+    public static T GetRandomElmentFromList<T>(IEnumerable<T> orderedList)
+    {
+        var posibility = 10;
+        var totalPosibility = orderedList.Count() * posibility;
+        var half = totalPosibility / 2;
+        var halfAndQuarter = half + totalPosibility / 4;
+        var halfAndThird = half + totalPosibility / 3;
+        var step = 1;
+
+        var result = orderedList.FirstOrDefault();
+
+        var coeficientOfNumber = GenerateRandomInt(totalPosibility, 0);
+
+        if(coeficientOfNumber >= half && coeficientOfNumber < halfAndQuarter)
+        {
+            result = orderedList.Skip(step).FirstOrDefault();
+        }
+        else if (coeficientOfNumber >= halfAndQuarter && coeficientOfNumber < halfAndThird)
+        {
+            result = orderedList.Skip(step + 1).FirstOrDefault();
+        }
+        else 
+        {
+            result = orderedList.LastOrDefault();
+        }
+
+        return result;
     }
 
     public static List<PlayingCard> GetRandomCardsFromListByBotDificulty(List<PlayingCard> cards, BotDificulty botDificulty)
@@ -31,20 +56,21 @@ public static class RandomHelper
         return GetRandomCardsFromList(cards, numberOfCardsThatVisibleToBot);
     }
 
+    public static PlayingCard GetRandomCardFromList(List<PlayingCard> cards)
+    {
+        var index = GenerateRandomInt(cards.Count, 0);
+
+        return cards[index];
+    }
+
     public static List<PlayingCard> GetRandomCardsFromList(List<PlayingCard> cards, int numberOfCardsToReturn)
     {
         var playersCards = new HashSet<PlayingCard>();
 
-        var rnd = new Random();
-
-        for (int i = 0; i < numberOfCardsToReturn; i++)
+        while (playersCards.Count < numberOfCardsToReturn)
         {
-            int index = rnd.Next(cards.Count);
-            var card = cards[index];
-            if (!playersCards.Add(card))
-            {
-                i--;
-            }
+            int index = _random.Next(cards.Count);
+            playersCards.Add(cards[index]);
         }
 
         return playersCards.ToList();

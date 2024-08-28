@@ -8,8 +8,9 @@ public class BotServiceConfiguration : IServiceInstaller
 {
     public void Install(IServiceCollection services, IConfiguration configuration)
     {
+        services.AddTransient<IBotMakeMoveService, BotMakeMoveService>();
         services.AddTransient<IBotFirstMoveService, BotFirstMoveService>();
         services.AddTransient<IBotNotFirstMoveService, BotNotFirstMoveService>();
-        services.AddTransient<IBotService, BotService>();
+        services.AddScoped<IBotService, BotService>();
     }
 }

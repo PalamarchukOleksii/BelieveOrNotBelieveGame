@@ -1,14 +1,19 @@
-﻿using BelieveOrNotBelieveGameServer.Models;
-using BelieveOrNotBelieveGameServer.Models.BotModels;
+﻿using BelieveOrNotBelieveGameServer.Models.BotModels;
 using BelieveOrNotBelieveGameServer.Services.Abstraction;
 
 namespace BelieveOrNotBelieveGameServer.Services.BotServices;
 
 public class BotFirstMoveService : IBotFirstMoveService
 {
-    public BotResponse MakeFirstMove(Player bot, List<Player> otherPlayers, List<PlayingCard> cardForDiscard, GameTable gameTable)
+    private readonly IBotMakeMoveService _botMakeMoveService;
+
+    public BotFirstMoveService(IBotMakeMoveService botMakeMoveService)
     {
-        throw new NotImplementedException();
-        //return new BotResponse();
+        _botMakeMoveService = botMakeMoveService;
+    }
+
+    public BotResponse MakeFirstMove(BotInfo botInfo)
+    {
+        return _botMakeMoveService.MakeMove(botInfo, true);
     }
 }
