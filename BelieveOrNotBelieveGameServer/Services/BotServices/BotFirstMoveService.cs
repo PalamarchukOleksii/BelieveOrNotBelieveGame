@@ -1,5 +1,4 @@
-﻿using BelieveOrNotBelieveGameServer.Models;
-using BelieveOrNotBelieveGameServer.Models.BotModels;
+﻿using BelieveOrNotBelieveGameServer.Models.BotModels;
 using BelieveOrNotBelieveGameServer.Services.Abstraction;
 
 namespace BelieveOrNotBelieveGameServer.Services.BotServices;

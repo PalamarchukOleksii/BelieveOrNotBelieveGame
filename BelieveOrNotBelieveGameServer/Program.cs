@@ -9,6 +9,8 @@ builder.Services
         builder.Configuration,
         typeof(Program).Assembly);
 
+builder.Services.AddSignalR();
+
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();

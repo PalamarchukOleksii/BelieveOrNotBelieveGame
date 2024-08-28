@@ -11,6 +11,6 @@ public class BotServiceConfiguration : IServiceInstaller
         services.AddTransient<IBotMakeMoveService, BotMakeMoveService>();
         services.AddTransient<IBotFirstMoveService, BotFirstMoveService>();
         services.AddTransient<IBotNotFirstMoveService, BotNotFirstMoveService>();
-        services.AddTransient<IBotService, BotService>();
+        services.AddScoped<IBotService, BotService>();
     }
 }

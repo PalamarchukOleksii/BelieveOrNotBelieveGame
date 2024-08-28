@@ -1,5 +1,4 @@
-﻿using BelieveOrNotBelieveGameServer.Common.Constants;
-using BelieveOrNotBelieveGameServer.Common.Helpers;
+﻿using BelieveOrNotBelieveGameServer.Common.Helpers;
 using BelieveOrNotBelieveGameServer.Models;
 using BelieveOrNotBelieveGameServer.Models.BotModels;
 using BelieveOrNotBelieveGameServer.Services.Abstraction;
@@ -12,18 +11,14 @@ public class BotService : IBotService
     private readonly IBotFirstMoveService _botFirstMoveService;
     private readonly IBotNotFirstMoveService _botNotFirstMoveService;
 
-    public BotService(BotFirstMoveService botFirstMoveService, IBotNotFirstMoveService botNotFirstMoveService)
+    public BotService(IBotFirstMoveService botFirstMoveService, IBotNotFirstMoveService botNotFirstMoveService)
     {
         _botNotFirstMoveService = botNotFirstMoveService;
         _botFirstMoveService = botFirstMoveService;
     }
 
-    private decimal probapility = 0;
-
     public BotResponse MakeMove(GameTable gameTable)
     {
-        var previousPlayer = gameTable.CurrentMovePlayer;
-        var nextPlayer = gameTable.NextMovePlayer;
         var bot = gameTable.CurrentMovePlayer;
 
         if (!bot.IsBot || bot.BotDifficulty == BotDificulty.ItIsNotABot)

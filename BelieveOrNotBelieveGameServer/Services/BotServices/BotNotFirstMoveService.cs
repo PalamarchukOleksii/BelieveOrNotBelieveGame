@@ -1,6 +1,5 @@
 ﻿using BelieveOrNotBelieveGameServer.Common.Constants;
 using BelieveOrNotBelieveGameServer.Common.Helpers;
-using BelieveOrNotBelieveGameServer.Models;
 using BelieveOrNotBelieveGameServer.Models.BotModels;
 using BelieveOrNotBelieveGameServer.Services.Abstraction;
 
