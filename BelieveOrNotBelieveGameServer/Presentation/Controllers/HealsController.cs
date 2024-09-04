@@ -4,7 +4,7 @@ namespace Presentation.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class HealsController : Controller
+public class HealsController : ControllerBase
 {
     [HttpGet]
     public IActionResult Get()

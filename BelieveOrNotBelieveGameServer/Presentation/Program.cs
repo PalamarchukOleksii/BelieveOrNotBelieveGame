@@ -5,9 +5,7 @@ using Presentation.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services
-    .AddApplication()
-    .AddDomain();
+builder.Services.AddApplication().AddDomain();
 
 builder.Services.AddSignalR();
 
@@ -41,7 +39,7 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
-//app.UseProblemDetails();
+app.UseProblemDetails();
 
 app.UseAuthorization();
 

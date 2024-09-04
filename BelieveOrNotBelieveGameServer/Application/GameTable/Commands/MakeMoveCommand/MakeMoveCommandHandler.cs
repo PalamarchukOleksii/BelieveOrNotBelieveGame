@@ -3,18 +3,17 @@ using Domain.Models.GameModels;
 using Domain.Responses;
 using MediatR;
 
-namespace Application.GameTable.Commands.StartGameCommand
+namespace Application.GameTable.Commands.MakeMoveCommand
 {
-    public class StartGameCommandHandler : IRequestHandler<StartGameCommandRequest, StartGameCommandResponse>
+    public class MakeMoveCommandHandler : IRequestHandler<MakeMoveCommandRequest, MakeMoveCommandResponse>
     {
         private readonly IGameTableService _gameTableService;
 
-        public StartGameCommandHandler(IGameTableService gameTableService)
+        public MakeMoveCommandHandler(IGameTableService gameTableService)
         {
             _gameTableService = gameTableService;
         }
-
-        public Task<StartGameCommandResponse> Handle(StartGameCommandRequest request, CancellationToken cancellationToken)
+        public Task<MakeMoveCommandResponse> Handle(MakeMoveCommandRequest request, CancellationToken cancellationToken)
         {
             Player? caller = _gameTableService.GetPlayerWithConnectionId(request.CallerConnectionId, request.GameName);
 
@@ -23,15 +22,16 @@ namespace Application.GameTable.Commands.StartGameCommand
                 throw new Exception("Player with this connection id does not exist");
             }
 
-            StartGameResponse result = _gameTableService.StartGame(request.GameName, caller);
+            MakeMoveResponse result = _gameTableService.MakeMove(request.GameName, caller, request.CardsValue, request.CardsId);
 
-            return Task.FromResult(new StartGameCommandResponse
+            return Task.FromResult(new MakeMoveCommandResponse
             {
-                Result = result.Result,
+                Success = result.Success,
                 Message = result.Message,
                 CurrentMovePlayerName = result.CurrentMovePlayerName,
                 CurrentMovePlayerConnectionId = result.CurrentMovePlayerConnectionId,
-                MakeMoveValue = result.MakeMoveValue
+                CurrentPlayerCanMakeMove = result.CurrentPlayerCanMakeMove,
+                CardsOnTableCount = result.CardsOnTableCount
             });
         }
     }

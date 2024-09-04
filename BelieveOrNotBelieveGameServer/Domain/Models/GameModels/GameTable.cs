@@ -29,11 +29,6 @@ namespace Domain.Models.GameModels
             return false;
         }
 
-        public Player? GetPlayerWithConnectionId(string connectionId)
-        {
-            return Players.Find(x => x.PlayerConnectionId == connectionId);
-        }
-
         public void StartGame()
         {
             GameStarted = true;

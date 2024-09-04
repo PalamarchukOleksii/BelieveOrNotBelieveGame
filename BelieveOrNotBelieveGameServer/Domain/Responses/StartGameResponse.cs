@@ -1,4 +1,4 @@
-﻿namespace Domain.Dtos.Responses
+﻿namespace Domain.Responses
 {
     public class StartGameResponse
     {

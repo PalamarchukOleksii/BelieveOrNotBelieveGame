@@ -1,8 +1,10 @@
 ﻿using Domain.Abstractions.GameAbstractions;
+using Domain.Common.Helpers;
 using Domain.Common.Options;
 using Domain.Constants;
-using Domain.Dtos.Responses;
+using Domain.Dtos;
 using Domain.Models.GameModels;
+using Domain.Responses;
 
 namespace Domain.Services.GameServices
 {
@@ -35,9 +37,76 @@ namespace Domain.Services.GameServices
             table.EndGame();
         }
 
+        public GetInfoAboutOpponentsResponse GetInfoAboutOpponents(string gameName)
+        {
+            GameTable? table = gameTables.Find(x => x.Options.GameName == gameName);
+
+            if (table == null)
+            {
+                throw new Exception("Table with that name does not exist");
+            }
+
+            return new GetInfoAboutOpponentsResponse
+            {
+                Success = true,
+                OpponentInfo = table.Players
+                .Select(p => new OpponentInfoDto
+                {
+                    PlayerConnectionId = p.PlayerConnectionId,
+                    Name = p.Name,
+                    CardCount = p.PlayersCards.Count
+                }).ToList()
+            };
+        }
+
+        public GetPlayersCardsResponse GetPlayersCards(string gameName)
+        {
+            GameTable? table = gameTables.Find(x => x.Options.GameName == gameName);
+
+            if (table == null)
+            {
+                throw new Exception("Table with that name does not exist");
+            }
+
+            return new GetPlayersCardsResponse
+            {
+                Success = true,
+                PlayersCards = table.Players
+                .Select(p => new PlayerCardsDto
+                {
+                    PlayerConnectionId = p.PlayerConnectionId,
+                    Cards = p.PlayersCards
+                }).ToList()
+            };
+        }
+
+        public List<string> GetPlayersConnectionIds(string gameName)
+        {
+            GameTable? table = gameTables.Find(x => x.Options.GameName == gameName);
+
+            if (table == null)
+            {
+                throw new Exception("Table with that name does not exist");
+            }
+
+            return new List<string>(table.Players.Select(P => P.PlayerConnectionId));
+        }
+
+        public List<string> GetPlayersWhoWinConnectionIds(string gameName)
+        {
+            GameTable? table = gameTables.Find(x => x.Options.GameName == gameName);
+
+            if (table == null)
+            {
+                throw new Exception("Table with that name does not exist");
+            }
+
+            return new List<string>(table.PlayersWhoWin.Select(P => P.PlayerConnectionId));
+        }
+
         public Player? GetPlayerWithConnectionId(string callerConnectionId, string gameName)
         {
-            return gameTables.Single(x => x.Options.GameName == gameName).Players.Single(x => x.PlayerConnectionId == callerConnectionId);
+            return gameTables.Single(x => x.Options.GameName == gameName).Players.Find(x => x.PlayerConnectionId == callerConnectionId);
         }
 
         public string JoinGame(string gameName, string username, string connectionId)
@@ -71,7 +140,7 @@ namespace Domain.Services.GameServices
             table.MakeAssume(iBelieve);
         }
 
-        public void MakeMove(string gameName, Move move)
+        public MakeMoveResponse MakeMove(string gameName, Player player, string cardsValue, string cardsId)
         {
             GameTable? table = gameTables.Find(x => x.Options.GameName == gameName);
 
@@ -80,7 +149,47 @@ namespace Domain.Services.GameServices
                 throw new Exception("Table with that name does not exist");
             }
 
-            table.MakeMove(move);
+            if (player.PlayersCards.Count > 0 && player.Name == table.CurrentMovePlayer.Name && PlayerHelper.CheckIfPlayerHaveSomeCards(player, cardsId))
+            {
+                string playerName = player.Name;
+                Move playerMove = new Move(playerName, cardsValue, cardsId);
+
+                table.MakeMove(playerMove);
+
+                Player nextPl = table.Players.Single(x => x.Name == table.CurrentMovePlayer.Name);
+
+                return new MakeMoveResponse
+                {
+                    Success = true,
+                    Message = $"{playerName} throw {playerMove.CardsId.Count} {playerMove.CardValue}",
+                    CurrentMovePlayerName = nextPl.Name,
+                    CurrentMovePlayerConnectionId = nextPl.PlayerConnectionId,
+                    CurrentPlayerCanMakeMove = nextPl.PlayersCards.Count != 0,
+                    CardsOnTableCount = table.CardsOnTable.Count
+                };
+            }
+            else if (player.PlayersCards.Count == 0)
+            {
+                return new MakeMoveResponse
+                {
+                    Success = false,
+                    Message = "You can only make an assume"
+                };
+            }
+            else if (player.Name != table.CurrentMovePlayer.Name)
+            {
+                return new MakeMoveResponse
+                {
+                    Success = false,
+                    Message = "It is not your turn"
+                };
+            }
+
+            return new MakeMoveResponse
+            {
+                Success = false,
+                Message = "You dont have this cards"
+            };
         }
 
         public StartGameResponse StartGame(string gameName, Player player)
@@ -124,7 +233,7 @@ namespace Domain.Services.GameServices
                     Message = "Game started",
                     CurrentMovePlayerConnectionId = table.CurrentMovePlayer.PlayerConnectionId,
                     CurrentMovePlayerName = table.CurrentMovePlayer.Name,
-                    MakeMoveValue = values
+                    MakeMoveValue = values.Where(x => x != "Ace").ToArray()
                 };
             }
 
