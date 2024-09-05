@@ -54,8 +54,7 @@ namespace Presentation.Hubs
             {
                 await Groups.AddToGroupAsync(Context.ConnectionId, gameName);
 
-                //except
-                await Clients.Group(gameName).SendAsync("ReceiveJoin", response.Message);
+                await Clients.GroupExcept(gameName, Context.ConnectionId).SendAsync("ReceiveJoin", response.Message);
 
                 await GetInfoAboutOpponents(gameName);
             }
