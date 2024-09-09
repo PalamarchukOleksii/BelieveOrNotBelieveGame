@@ -384,5 +384,5 @@ dist-ssr
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
+#*.sln
 *.sw?
