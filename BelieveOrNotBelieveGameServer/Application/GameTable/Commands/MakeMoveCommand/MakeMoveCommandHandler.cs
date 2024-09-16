@@ -1,6 +1,5 @@
 ﻿using Domain.Abstractions.GameAbstractions;
 using Domain.Models.GameModels;
-using Domain.Responses;
 using MediatR;
 
 namespace Application.GameTable.Commands.MakeMoveCommand
@@ -15,24 +14,66 @@ namespace Application.GameTable.Commands.MakeMoveCommand
         }
         public Task<MakeMoveCommandResponse> Handle(MakeMoveCommandRequest request, CancellationToken cancellationToken)
         {
-            Player? caller = _gameTableService.GetPlayerWithConnectionId(request.CallerConnectionId, request.GameName);
-
-            if (caller == null)
+            Domain.Models.GameModels.GameTable? table = _gameTableService.GetGameTableByName(request.GameName);
+            if (table is null)
             {
-                throw new Exception("Player with this connection id does not exist");
+                return Task.FromResult(new MakeMoveCommandResponse
+                {
+                    Success = false,
+                    Message = $"Game with name {request.GameName} do not exist"
+                });
             }
 
-            MakeMoveResponse result = _gameTableService.MakeMove(request.GameName, caller, request.CardsValue, request.CardsId);
-
-            return Task.FromResult(new MakeMoveCommandResponse
+            Player? player = table.GetPlayerByName(request.CallerConnectionId);
+            if (player is null)
             {
-                Success = result.Success,
-                Message = result.Message,
-                CurrentMovePlayerName = result.CurrentMovePlayerName,
-                CurrentMovePlayerConnectionId = result.CurrentMovePlayerConnectionId,
-                CurrentPlayerCanMakeMove = result.CurrentPlayerCanMakeMove,
-                CardsOnTableCount = result.CardsOnTableCount
-            });
+                return Task.FromResult(new MakeMoveCommandResponse
+                {
+                    Success = false,
+                    Message = $"Player with connection id {request.CallerConnectionId} do not exist in game {request.GameName}"
+                });
+            }
+
+            switch (table.CheckIfPlayerCanMakeMove(player, request.CardsId))
+            {
+                case "Can make move":
+                    Move playerMove = new Move(player.Name, request.CardsValue, request.CardsId);
+                    table.MakeMoveOnGameTable(playerMove);
+
+                    return Task.FromResult(new MakeMoveCommandResponse
+                    {
+                        Success = true,
+                        Message = $"{playerMove.PlayerName} threw {playerMove.CardsId.Count} {playerMove.CardValue}(s)"
+                    });
+
+                case "Zero cards":
+                    return Task.FromResult(new MakeMoveCommandResponse
+                    {
+                        Success = false,
+                        Message = "You can only make an assumption"
+                    });
+
+                case "Not this player's turn":
+                    return Task.FromResult(new MakeMoveCommandResponse
+                    {
+                        Success = false,
+                        Message = "It is not your turn"
+                    });
+
+                case "Do not have these cards":
+                    return Task.FromResult(new MakeMoveCommandResponse
+                    {
+                        Success = false,
+                        Message = "You don't have these cards"
+                    });
+
+                default:
+                    return Task.FromResult(new MakeMoveCommandResponse
+                    {
+                        Success = false,
+                        Message = "Invalid move"
+                    });
+            }
         }
     }
 }

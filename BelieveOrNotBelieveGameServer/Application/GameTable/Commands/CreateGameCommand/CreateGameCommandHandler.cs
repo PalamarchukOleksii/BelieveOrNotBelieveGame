@@ -1,5 +1,4 @@
 ﻿using Domain.Abstractions.GameAbstractions;
-using Domain.Common.Options;
 using MediatR;
 
 namespace Application.GameTable.Commands.CreateGameCommand
@@ -15,22 +14,34 @@ namespace Application.GameTable.Commands.CreateGameCommand
 
         public Task<CreateGameCommandResponse> Handle(CreateGameCommandRequest request, CancellationToken cancellationToken)
         {
-            GameTableOptions options = new GameTableOptions
-            {
-                GameName = request.GameName,
-                AddBot = request.AddBot,
-                MaxNumOfPlayers = request.MaxNumOfPlayers,
-                NumOfCards = request.NumOfCards
-            };
+            Domain.Models.GameModels.GameTable? table = _gameTableService.GetGameTableByName(request.GameTableOptions.GameName);
 
-            bool result = _gameTableService.CreateGame(options);
-
-            if (!result)
+            if (table is not null)
             {
-                return Task.FromResult(new CreateGameCommandResponse { Successs = false, Message = "Game with this name already exist" });
+                return Task.FromResult(new CreateGameCommandResponse
+                {
+                    Success = false,
+                    Message = $"Game with name {request.GameTableOptions.GameName} already exist"
+                });
             }
 
-            return Task.FromResult(new CreateGameCommandResponse { Successs = true, Message = $"Game {request.GameName} created" });
+            table = _gameTableService.CreateGameTable(request.GameTableOptions);
+
+            if (table is null)
+            {
+                return Task.FromResult(new CreateGameCommandResponse
+                {
+                    Success = false,
+                    Message = "Error on server, cant create game"
+                });
+            }
+
+            return Task.FromResult(new CreateGameCommandResponse
+            {
+                Success = true,
+                Message = $"Game {table.Options.GameName} created",
+                GameTable = table
+            });
         }
     }
 }

@@ -1,7 +1,10 @@
 ﻿using Application.GameTable.Commands.CreateGameCommand;
+using Application.GameTable.Commands.EndGameCommand;
 using Application.GameTable.Commands.JoinGameCommand;
+using Application.GameTable.Commands.MakeAssumeCommand;
 using Application.GameTable.Commands.MakeMoveCommand;
 using Application.GameTable.Commands.StartGameCommand;
+using Application.GameTable.Queries.GetGameStateQuery;
 using Application.GameTable.Queries.GetInfoAboutOpponentsQuery;
 using Application.GameTable.Queries.GetPlayerCardsQuery;
 using MediatR;
@@ -19,21 +22,18 @@ namespace Presentation.Hubs
             _mediator = mediator;
         }
 
-        public async Task CreateGame(CreateGameDto createGameDto)
+        public async Task CreateGame(CreateGameDto createGameInfo)
         {
             CreateGameCommandResponse response = await _mediator.Send(new CreateGameCommandRequest
             {
-                GameName = createGameDto.GameName,
-                NumOfCards = createGameDto.NumOfCards,
-                AddBot = createGameDto.AddBot,
-                MaxNumOfPlayers = createGameDto.MaxNumOfPlayers,
+                GameTableOptions = createGameInfo.GameTableOptions
             });
 
-            if (response.Successs)
+            if (response.Success)
             {
-                await Clients.All.SendAsync("RecieveNewGameCreated", response.Message);
+                await Clients.All.SendAsync("RecieveNewGameCreated", response.Message, response.GameTable);
 
-                await JoinGameTable(createGameDto.CreatorName, createGameDto.GameName);
+                await JoinGameTable(createGameInfo.CreatorName, createGameInfo.GameTableOptions.GameName);
             }
             else
             {
@@ -56,7 +56,7 @@ namespace Presentation.Hubs
 
                 await Clients.GroupExcept(gameName, Context.ConnectionId).SendAsync("ReceiveJoin", response.Message);
 
-                await GetInfoAboutOpponents(gameName);
+                await SendInfoAboutOpponents(gameName);
             }
             else
             {
@@ -72,25 +72,16 @@ namespace Presentation.Hubs
                 GameName = gameName
             });
 
-            if (response.Result == "GameStarted")
+            if (response.Success)
             {
                 await Clients.Group(gameName).SendAsync("RecieveGameStarted", response.Message);
-                await Clients.Client(response.CurrentMovePlayerConnectionId).SendAsync("ReceiveStartMove", "You start the game");
 
-                await Clients.GroupExcept(gameName, response.CurrentMovePlayerConnectionId)
-                    .SendAsync("ReceiveCurrentMovePlayer", $"{response.CurrentMovePlayerName} make move");
-                await Clients.Group(gameName).SendAsync("ReceiveMakeMoveValues", response.MakeMoveValue);
-
-                await GetInfoAboutOpponents(gameName);
-                await GetPlayersCards(gameName);
-            }
-            else if (response.Result == "GameNotStarted")
-            {
-                await Clients.Group(gameName).SendAsync("RecieveGameNotStarted", response.Message);
+                await SendInfoAboutOpponents(gameName);
+                await SendPlayersCards(gameName);
             }
             else
             {
-                await Clients.Group(gameName).SendAsync("RecieveWaitingForOtherPlayers", response.Message);
+                await Clients.Group(gameName).SendAsync("RecieveGameNotStarted", response.Message);
             }
         }
 
@@ -108,23 +99,9 @@ namespace Presentation.Hubs
             {
                 await Clients.Group(makeMoveDto.GameName).SendAsync("RecieveMove", response.Message);
 
-                if (response.CurrentPlayerCanMakeMove)
-                {
-                    await Clients.Client(response.CurrentMovePlayerConnectionId)
-                        .SendAsync("ReceiveNextMoveAssume", "You make assume or move");
-                    await Clients.GroupExcept(makeMoveDto.GameName, response.CurrentMovePlayerConnectionId)
-                        .SendAsync("ReceiveCurrentMovePlayer", $"{response.CurrentMovePlayerName} make assume or move");
-                }
-                else
-                {
-                    await Clients.Client(response.CurrentMovePlayerConnectionId).SendAsync("ReceiveNextMoveAssume", "You make assume");
-                    await Clients.GroupExcept(makeMoveDto.GameName, response.CurrentMovePlayerConnectionId)
-                        .SendAsync("ReceiveCurrentMovePlayer", $"{response.CurrentMovePlayerName} make assume");
-                }
-
-                await Clients.Group(makeMoveDto.GameName).SendAsync("ReceiveCardOnTableCount", response.CardsOnTableCount);
-
-                await GetPlayersCards(makeMoveDto.GameName);
+                await SendGameState(makeMoveDto.GameName);
+                await SendInfoAboutOpponents(makeMoveDto.GameName);
+                await SendPlayersCards(makeMoveDto.GameName);
             }
             else
             {
@@ -132,42 +109,37 @@ namespace Presentation.Hubs
             }
         }
 
-        //public async Task MakeAssume(bool iBelieve)
-        //{
-        //    if (GameTable.Players.Single(x => x.PlayerConnectionId == Context.ConnectionId).Name == GameTable.CurrentMovePlayer.Name)
-        //    {
-        //        (int ResultId, string ClientMessage) = GameTable.MakeAssume(iBelieve);
+        public async Task MakeAssume(MakeAssumeDto makeAssumeDto)
+        {
+            MakeAssumeCommandResponse response = await _mediator.Send(new MakeAssumeCommandRequest
+            {
+                CallerConnectionId = Context.ConnectionId,
+                GameName = makeAssumeDto.GameName,
+                IBelieve = makeAssumeDto.IBelieve
+            });
 
-        //        if (ResultId == 5)
-        //        {
-        //            GameTable.GameStarted = false;
-        //            await Clients.All.SendAsync("ReceiveGameOver", ClientMessage);
-        //            GameTable.EndGame();
-        //        }
-        //        else
-        //        {
-        //            await Clients.All.SendAsync("ReceiveAssume", ClientMessage);
-        //            await Clients.Client(
-        //                GameTable.Players.
-        //                Single(x => x.Name == GameTable.CurrentMovePlayer.Name)
-        //                .PlayerConnectionId)
-        //                .SendAsync("ReceiveFirstMove", "You make move");
-        //            await Clients.AllExcept(
-        //                GameTable.Players
-        //                .Single(x => x.Name == GameTable.CurrentMovePlayer.Name)
-        //                .PlayerConnectionId)
-        //                .SendAsync("ReceiveCurrentMovePlayer", $"{GameTable.Players.Single(x => x.Name == GameTable.CurrentMovePlayer.Name).Name} make move");
-        //        }
+            if (response.Success)
+            {
+                await Clients.Group(makeAssumeDto.GameName).SendAsync("RecieveNotAssume", response.Message);
 
-        //        await SendPlayersCards();
-        //        await SendInfoAboutOpponents();
+                if (response.EndGame)
+                {
+                    await SendEndGame(makeAssumeDto.GameName);
+                }
+                else
+                {
+                    await SendGameState(makeAssumeDto.GameName);
+                    await SendInfoAboutOpponents(makeAssumeDto.GameName);
+                    await SendPlayersCards(makeAssumeDto.GameName);
+                }
+            }
+            else
+            {
+                await Clients.Caller.SendAsync("RecieveNotAssume", response.Message);
+            }
+        }
 
-        //        await Clients.All.SendAsync("ReceiveCardOnTableCount", GameTable.CardsOnTable.Count);
-        //        await Clients.All.SendAsync("ReceiveDiscardCardsCount", GameTable.CountCardsForDiscard);
-        //    }
-        //}
-
-        public async Task GetInfoAboutOpponents(string gameName)
+        public async Task SendInfoAboutOpponents(string gameName)
         {
             GetInfoAboutOpponentsQueryResponse response = await _mediator.Send(new GetInfoAboutOpponentsQueryRequest
             {
@@ -190,17 +162,13 @@ namespace Presentation.Hubs
             }
             else
             {
-                await Clients.Caller.SendAsync("NotReceiveOpponentsInfo", "Error on server");
-
+                await Clients.Caller.SendAsync("NotReceiveOpponentsInfo", response.Message);
             }
         }
 
-        public async Task GetPlayersCards(string gameName)
+        public async Task SendPlayersCards(string gameName)
         {
-            GetPlayerCardsQueryResponse response = await _mediator.Send(new GetPlayerCardsQueryRequest
-            {
-                GameName = gameName
-            });
+            GetPlayerCardsQueryResponse response = await _mediator.Send(new GetPlayerCardsQueryRequest { GameName = gameName });
 
             if (response.Success)
             {
@@ -211,8 +179,57 @@ namespace Presentation.Hubs
             }
             else
             {
-                await Clients.Caller.SendAsync("NotReceiveCard", "Error on server");
+                await Clients.Caller.SendAsync("NotReceiveCard", response.Message);
             }
+        }
+
+        public async Task SendGameState(string gameName)
+        {
+            GetGameStateQueryResponse response = await _mediator.Send(new GetGameStateQueryRequest { GameName = gameName });
+
+            if (response.Success)
+            {
+                if (response.CurrentPlayerCanMakeMove && response.CurrentPlayerCanMakeAssume)
+                {
+                    await Clients.Client(response.CurrentMovePlayerConnectionId)
+                        .SendAsync("ReceiveNextMoveAssume", "You make assume or move");
+                    await Clients.GroupExcept(gameName, response.CurrentMovePlayerConnectionId)
+                        .SendAsync("ReceiveCurrentMovePlayer", $"{response.CurrentMovePlayerName} make assume or move");
+                }
+                else if (response.CurrentPlayerCanMakeAssume)
+                {
+                    await Clients.Client(response.CurrentMovePlayerConnectionId).SendAsync("ReceiveNextAssume", "You make assume");
+                    await Clients.GroupExcept(gameName, response.CurrentMovePlayerConnectionId)
+                        .SendAsync("ReceiveCurrentMovePlayer", $"{response.CurrentMovePlayerName} make assume");
+                }
+                else
+                {
+                    await Clients.Client(response.CurrentMovePlayerConnectionId).SendAsync("ReceiveNextMove", "You make move");
+                    await Clients.GroupExcept(gameName, response.CurrentMovePlayerConnectionId)
+                        .SendAsync("ReceiveCurrentMovePlayer", $"{response.CurrentMovePlayerName} make move");
+                }
+
+                await Clients.Group(gameName).SendAsync("ReceiveCardOnTableCount", response.CardsOnTableCount);
+                await Clients.Group(gameName).SendAsync("ReceiveMakeMoveValues", response.MakeMoveValue);
+            }
+            else
+            {
+                await Clients.Caller.SendAsync("NotReceiveCard", response.Message);
+            }
+        }
+
+        public async Task SendEndGame(string gameName)
+        {
+            EndGameCommandResponse response = await _mediator.Send(new EndGameCommandRequest { GameName = gameName });
+            if (response.Success)
+            {
+                await Clients.Group(gameName).SendAsync("RecieveEndGame", response.Message);
+
+                await SendInfoAboutOpponents(gameName);
+                await SendPlayersCards(gameName);
+            }
+
+            await Clients.Group(gameName).SendAsync("RecieveNotEndGame", response.Message);
         }
 
         //public override async Task OnDisconnectedAsync(Exception? exception)

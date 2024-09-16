@@ -1,6 +1,6 @@
-﻿namespace Application.GameTable.Commands.StartGameCommand
+﻿namespace Application.GameTable.Commands.EndGameCommand
 {
-    public class StartGameCommandResponse
+    public class EndGameCommandResponse
     {
         public bool Success { get; set; } = false;
         public string Message { get; set; } = string.Empty;

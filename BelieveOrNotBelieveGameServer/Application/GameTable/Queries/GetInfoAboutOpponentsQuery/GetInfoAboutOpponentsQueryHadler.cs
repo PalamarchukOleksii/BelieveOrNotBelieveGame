@@ -1,5 +1,5 @@
 ﻿using Domain.Abstractions.GameAbstractions;
-using Domain.Responses;
+using Domain.Dtos;
 using MediatR;
 
 namespace Application.GameTable.Queries.GetInfoAboutOpponentsQuery
@@ -12,17 +12,27 @@ namespace Application.GameTable.Queries.GetInfoAboutOpponentsQuery
         {
             _gameTableService = gameTableService;
         }
+
         public Task<GetInfoAboutOpponentsQueryResponse> Handle(GetInfoAboutOpponentsQueryRequest request, CancellationToken cancellationToken)
         {
-            GetInfoAboutOpponentsResponse result = _gameTableService.GetInfoAboutOpponents(request.GameName);
+            Domain.Models.GameModels.GameTable? table = _gameTableService.GetGameTableByName(request.GameName);
+            if (table is null)
+            {
+                return Task.FromResult(new GetInfoAboutOpponentsQueryResponse
+                {
+                    Success = false,
+                    Message = $"Game with name {request.GameName} do not exist"
+                });
+            }
 
-            List<string> playersConnectionIds = _gameTableService.GetPlayersConnectionIds(request.GameName);
-            List<string> playersWhoWinConnectionIds = _gameTableService.GetPlayersWhoWinConnectionIds(request.GameName);
+            List<ShortOpponentInfoDto> info = table.GetShortInfoAboutPlayers();
+            (List<string> playersConnectionIds, List<string> playersWhoWinConnectionIds) = table.GetAllConnectionId();
 
             return Task.FromResult(new GetInfoAboutOpponentsQueryResponse
             {
-                Success = result.Success,
-                OpponentInfo = result.OpponentInfo,
+                Success = true,
+                Message = $"Short info about players on game {request.GameName} resived",
+                OpponentInfo = info,
                 PlayersConnectionIds = playersConnectionIds,
                 PlayersWhoWinConnectionIds = playersWhoWinConnectionIds
             });
