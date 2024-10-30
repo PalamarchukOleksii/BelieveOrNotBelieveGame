@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Application", "Application\Application.csproj", "{C20C21A9-F156-45A1-847D-9498E67924E1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{993D2F16-3D02-4C73-91AC-92B00B00F6A8}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Presentation", "Presentation\Presentation.csproj", "{55E5EA43-047A-4335-8494-31A480D0C5C1}"
 EndProject
 Global
@@ -25,10 +23,6 @@ Global
 		{C20C21A9-F156-45A1-847D-9498E67924E1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C20C21A9-F156-45A1-847D-9498E67924E1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C20C21A9-F156-45A1-847D-9498E67924E1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{993D2F16-3D02-4C73-91AC-92B00B00F6A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{993D2F16-3D02-4C73-91AC-92B00B00F6A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{993D2F16-3D02-4C73-91AC-92B00B00F6A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{993D2F16-3D02-4C73-91AC-92B00B00F6A8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{55E5EA43-047A-4335-8494-31A480D0C5C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{55E5EA43-047A-4335-8494-31A480D0C5C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55E5EA43-047A-4335-8494-31A480D0C5C1}.Release|Any CPU.ActiveCfg = Release|Any CPU

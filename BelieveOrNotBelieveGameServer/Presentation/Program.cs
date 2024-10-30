@@ -51,4 +51,4 @@ app.MapHub<GameHub>("game-hub");
 
 app.UseCors("ClientCors");
 
-app.Run();
+await app.RunAsync();
