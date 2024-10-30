@@ -1,9 +1,11 @@
 ﻿using Application.GameTable.Commands.CreateGameCommand;
 using Application.GameTable.Commands.EndGameCommand;
 using Application.GameTable.Commands.JoinGameCommand;
+using Application.GameTable.Commands.LeaveGameCommand;
 using Application.GameTable.Commands.MakeAssumeCommand;
 using Application.GameTable.Commands.MakeMoveCommand;
 using Application.GameTable.Commands.StartGameCommand;
+using Application.GameTable.Queries.GetGameNameByConnectionIdQuery;
 using Application.GameTable.Queries.GetGameStateQuery;
 using Application.GameTable.Queries.GetInfoAboutOpponentsQuery;
 using Application.GameTable.Queries.GetPlayerCardsQuery;
@@ -228,26 +230,34 @@ namespace Presentation.Hubs
                 await SendInfoAboutOpponents(gameName);
                 await SendPlayersCards(gameName);
             }
-
-            await Clients.Group(gameName).SendAsync("RecieveNotEndGame", response.Message);
+            else
+            {
+                await Clients.Group(gameName).SendAsync("RecieveNotEndGame", response.Message);
+            }
         }
 
-        //public override async Task OnDisconnectedAsync(Exception? exception)
-        //{
-        //    if (GameTable.Players.Exists(x => x.PlayerConnectionId == Context.ConnectionId))
-        //    {
-        //        if (GameTable.GameStarted)
-        //        {
-        //            GameTable.GameStarted = false;
-        //            await Clients.All.SendAsync("ReceiveGameOver", $"Game over, {GameTable.Players.Single(x => x.PlayerConnectionId == Context.ConnectionId).Name} lose");
-        //        }
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            GetGameNameByConnectionIdQueryResponse gameNameResponse = await _mediator.Send(new GetGameNameByConnectionIdQueryRequest { CallerConnectionId = Context.ConnectionId });
+            if (gameNameResponse.Success)
+            {
+                LeaveGameCommandResponse leaveResponse = await _mediator.Send(new LeaveGameCommandRequest
+                {
+                    CallerConnectionId = Context.ConnectionId,
+                    GameName = gameNameResponse.GameName
+                });
 
-        //        GameTable.Players.Remove(GameTable.Players.Single(x => x.PlayerConnectionId == Context.ConnectionId));
-        //        GameTable.EndGame();
+                if (leaveResponse.Success)
+                {
+                    await Clients.Group(gameNameResponse.GameName).SendAsync("RecievePlayerLeave", leaveResponse.Message);
+                    if (leaveResponse.EndGame)
+                    {
+                        await SendEndGame(gameNameResponse.GameName);
+                    }
+                }
+            }
 
-        //        await SendInfoAboutOpponents();
-        //    }
-        //    await base.OnDisconnectedAsync(exception);
-        //}
+            await base.OnDisconnectedAsync(exception);
+        }
     }
 }
