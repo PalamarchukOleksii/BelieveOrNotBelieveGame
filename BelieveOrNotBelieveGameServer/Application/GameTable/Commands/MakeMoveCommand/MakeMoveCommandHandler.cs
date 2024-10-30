@@ -24,7 +24,7 @@ namespace Application.GameTable.Commands.MakeMoveCommand
                 });
             }
 
-            Player? player = table.GetPlayerByName(request.CallerConnectionId);
+            Player? player = table.GetPlayerByConnectionId(request.CallerConnectionId);
             if (player is null)
             {
                 return Task.FromResult(new MakeMoveCommandResponse

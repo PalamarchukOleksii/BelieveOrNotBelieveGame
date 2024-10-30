@@ -25,7 +25,7 @@ namespace Application.GameTable.Commands.StartGameCommand
                 });
             }
 
-            Player? player = table.GetPlayerByName(request.CallerConnectionId);
+            Player? player = table.GetPlayerByConnectionId(request.CallerConnectionId);
             if (player is null)
             {
                 return Task.FromResult(new StartGameCommandResponse
