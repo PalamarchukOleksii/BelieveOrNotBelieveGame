@@ -5,7 +5,9 @@ using Presentation.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddApplication().AddDomain();
+builder.Services
+    .AddApplication()
+    .AddDomain();
 
 builder.Services.AddSignalR();
 
@@ -38,7 +40,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 app.UseProblemDetails();
 
 app.UseAuthorization();
@@ -49,4 +51,4 @@ app.MapHub<GameHub>("game-hub");
 
 app.UseCors("ClientCors");
 
-app.Run();
+await app.RunAsync();

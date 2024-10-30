@@ -1,58 +1,149 @@
-﻿using Domain.Common.Helpers;
-using Domain.Common.Options;
+﻿using Domain.Common.Options;
+using Domain.Dtos;
 
 namespace Domain.Models.GameModels
 {
     public class GameTable
     {
-        public GameTableOptions Options { get; set; } = new GameTableOptions();
-        public List<Player> Players { get; set; } = new List<Player>();
-        public List<PlayingCard> CardsOnTable { get; set; } = new List<PlayingCard>();
-        public List<PlayingCard> CardsForDiscard { get; set; } = new List<PlayingCard>();
-        public Move? Move { get; set; }
-        public Player CurrentMovePlayer { get; set; } = new Player();
-        public Player PreviousMovePlayer { get; set; } = new Player();
-        public Player NextMovePlayer { get; set; } = new Player();
+        public GameTableOptions Options { get; private set; } = new GameTableOptions();
+        public List<Player> Players { get; private set; } = new List<Player>();
+        public List<PlayingCard> CardsOnTable { get; private set; } = new List<PlayingCard>();
+        public List<PlayingCard> CardsForDiscard { get; private set; } = new List<PlayingCard>();
+        public Move? Move { get; private set; }
+        public CardsDeck CardsDeck { get; private set; } = new CardsDeck(36);
+        public Player CurrentMovePlayer { get; private set; } = new Player();
+        public Player PreviousMovePlayer { get; private set; } = new Player();
+        public Player NextMovePlayer { get; private set; } = new Player();
         private int Position = 0;
-        public bool GameStarted { get; set; } = false;
-        public int CountCardsForDiscard { get; set; } = 0;
-        public List<Player> PlayersWhoWin { get; set; } = new List<Player>();
+        public bool GameStarted { get; private set; } = false;
+        public int CountCardsForDiscard { get; private set; } = 0;
+        public List<Player> PlayersWhoWin { get; private set; } = new List<Player>();
+
+        public GameTable() { }
+
+        public GameTable(GameTableOptions options)
+        {
+            Options = options;
+        }
+
+        public string CheckIfPlayerCanMakeMove(Player player, List<int> cardsId)
+        {
+            if (player.PlayersCards.Count == 0)
+            {
+                return "Zero cards";
+            }
+
+            if (player.Name != CurrentMovePlayer.Name)
+            {
+                return "Not this player's turn";
+            }
+
+            if (!player.CheckIfPlayerHaveSomeCards(cardsId))
+            {
+                return "Do not have these cards";
+            }
+
+            return "Can make move";
+        }
+
+        public bool CheckIfPlayerCanMakeAssume(Player player)
+        {
+            return player.Name == CurrentMovePlayer.Name;
+        }
+
+        public Player? GetPlayerByName(string playerName)
+        {
+            Player? player = Players.Find(x => x.Name == playerName);
+
+            if (player is not null)
+            {
+                return player;
+            }
+
+            return null;
+        }
+
+        public Player? GetPlayerByConnectionId(string connectionId)
+        {
+            Player? player = Players.Find(x => x.PlayerConnectionId == connectionId);
+
+            if (player is not null)
+            {
+                return player;
+            }
+
+            return null;
+        }
+
+        public List<ShortOpponentInfoDto> GetShortInfoAboutPlayers()
+        {
+            return Players.Select(x => new ShortOpponentInfoDto
+            {
+                PlayerConnectionId = x.PlayerConnectionId,
+                Name = x.Name,
+                CardCount = x.PlayersCards.Count
+            }).ToList();
+        }
+
+        public (List<string> playersConnectionIds, List<string> playersWhoWinConnectionIds) GetAllConnectionId()
+        {
+            List<string> plConnIds = Players.Select(x => x.PlayerConnectionId).ToList();
+            List<string> plWhoWinConnIds = PlayersWhoWin.Select(x => x.PlayerConnectionId).ToList();
+
+            return (plConnIds, plWhoWinConnIds);
+        }
 
         public bool JoinGameTable(string username, string connectionId)
         {
             if (!Players.Exists(x => x.Name == username))
             {
-                Players.Add(new Player { PlayerConnectionId = connectionId, Name = username });
+                Players.Add(new Player(connectionId, username));
                 return true;
             }
 
             return false;
         }
 
-        public void StartGame()
+        public List<PlayerCardsDto> GetPlayerCards()
         {
-            GameStarted = true;
-            CardsDeck deck = new CardsDeck(Options.NumOfCards);
-            CardsDeckHelper.ShuffleCards(deck);
-            //deck.ShuffleCards();
-            CardsDeckHelper.GiveCardsToPlayers(deck, Players);
-            //deck.GiveCardsToPlayers(Players);
-
-            Random rnd = new Random();
-            Position = rnd.Next(0, Players.Count - 1);
-
-            CurrentMovePlayer = Players[Position];
-            if (Position == Players.Count - 1)
+            return Players.Select(x => new PlayerCardsDto
             {
-                NextMovePlayer = Players[0];
-            }
-            else
-            {
-                NextMovePlayer = Players[Position + 1];
-            }
+                PlayerConnectionId = x.PlayerConnectionId,
+                Cards = x.PlayersCards,
+            }).ToList();
         }
 
-        public void MakeMove(Move move)
+        public GameStateDto GetGameState()
+        {
+            return new GameStateDto
+            {
+                CurrentMovePlayerName = CurrentMovePlayer.Name,
+                CurrentMovePlayerConnectionId = CurrentMovePlayer.PlayerConnectionId,
+                CurrentPlayerCanMakeMove = CurrentMovePlayer.PlayersCards.Count > 0,
+                CurrentPlayerCanMakeAssume = CardsOnTable.Count > 0,
+                MakeMoveValue = CardsDeck.Values.ToList(),
+                CardsOnTableCount = CardsOnTable.Count,
+            };
+        }
+
+        public bool StartGameTable(Player player)
+        {
+            player.SetStartGame(true);
+
+            if (Players.Count(x => x.StartGame) == Players.Count)
+            {
+                GameStarted = true;
+
+                InitPlayersCards(Options.NumOfCards);
+                InitlCalcPlayer();
+
+                return true;
+            }
+
+            return false;
+        }
+
+        public void MakeMoveOnGameTable(Move move)
         {
             Move = move;
             var player = Players.Single(x => x.Name == move.PlayerName);
@@ -78,10 +169,10 @@ namespace Domain.Models.GameModels
             CalcPlayer();
         }
 
-        public (int ResultId, string ClientMessage) MakeAssume(bool iBelieve)
+        public (bool EndGame, string Message) MakeAssumeOnGameTable(bool iBelieve)
         {
             bool allCardsIsCorrect = true;
-            (int ResultId, string ClientMessage) result;
+            (bool EndGame, string Message) result;
 
             for (int i = CardsOnTable.Count - 1; i >= CardsOnTable.Count - Move?.CardsId.Count; i--)
             {
@@ -99,11 +190,11 @@ namespace Domain.Models.GameModels
 
                 if (Players.TrueForAll(x => !x.PlayersCards.Any()))
                 {
-                    result = (5, $"Game over, {CurrentMovePlayer} lose, player {PreviousMovePlayer} do not lie");
+                    result = (true, $"Game over, {CurrentMovePlayer} lose, player {PreviousMovePlayer} do not lie");
                 }
                 else if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = (5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do not lie");
+                    result = (true, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do not lie");
                 }
                 else if (Players.Single(x => x.Name == CurrentMovePlayer.Name).PlayersCards.Count > 0)
                 {
@@ -113,12 +204,12 @@ namespace Domain.Models.GameModels
                     Players.RemoveAll(x => x.PlayersCards.Count == 0);
                     NextMovePlayer = Players[(Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayer.Name)) + 1) % Players.Count];
 
-                    result = (1, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do not lie");
+                    result = (false, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do not lie");
                 }
                 else
                 {
                     CalcPlayerWhenDelete();
-                    result = (1, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do not lie");
+                    result = (false, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do not lie");
                 }
             }
             else if (allCardsIsCorrect && !iBelieve)
@@ -127,7 +218,7 @@ namespace Domain.Models.GameModels
 
                 if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = (5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do not lie");
+                    result = (true, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do not lie");
                 }
                 else if (Players.Single(x => x.Name == NextMovePlayer.Name).PlayersCards.Count > 0)
                 {
@@ -135,13 +226,13 @@ namespace Domain.Models.GameModels
                     PlayersWhoWin.AddRange(plWithNoCards);
                     Players.RemoveAll(x => x.PlayersCards.Count == 0);
 
-                    result = (2, $"{NextMovePlayer} player make next move, player {PreviousMovePlayer} do not lie");
+                    result = (false, $"{NextMovePlayer} player make next move, player {PreviousMovePlayer} do not lie");
                     CalcPlayer();
                 }
                 else
                 {
                     CalcPlayerWhenDelete();
-                    result = (2, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do not lie");
+                    result = (false, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do not lie");
                 }
             }
             else if (!allCardsIsCorrect && iBelieve)
@@ -150,7 +241,7 @@ namespace Domain.Models.GameModels
 
                 if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = new(5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do lie");
+                    result = new(true, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do lie");
                 }
                 else if (Players.Single(x => x.Name == NextMovePlayer.Name).PlayersCards.Count > 0)
                 {
@@ -158,13 +249,13 @@ namespace Domain.Models.GameModels
                     PlayersWhoWin.AddRange(plWithNoCards);
                     Players.RemoveAll(x => x.PlayersCards.Count == 0);
 
-                    result = new(3, $"{NextMovePlayer} player make next move, player {PreviousMovePlayer} dot lie");
+                    result = new(false, $"{NextMovePlayer} player make next move, player {PreviousMovePlayer} dot lie");
                     CalcPlayer();
                 }
                 else
                 {
                     CalcPlayerWhenDelete();
-                    result = new(3, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do lie");
+                    result = new(false, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do lie");
                 }
             }
             else
@@ -173,7 +264,7 @@ namespace Domain.Models.GameModels
 
                 if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = (5, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do lie");
+                    result = (true, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do lie");
                 }
                 else if (Players.Single(x => x.Name == CurrentMovePlayer.Name).PlayersCards.Count > 0)
                 {
@@ -183,12 +274,12 @@ namespace Domain.Models.GameModels
                     Players.RemoveAll(x => x.PlayersCards.Count == 0);
                     NextMovePlayer = Players[(Players.IndexOf(Players.Single(x => x.Name == CurrentMovePlayer.Name)) + 1) % Players.Count];
 
-                    result = (4, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do lie");
+                    result = (false, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do lie");
                 }
                 else
                 {
                     CalcPlayerWhenDelete();
-                    result = (4, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do lie");
+                    result = (false, $"{CurrentMovePlayer} player make next move, player {PreviousMovePlayer} do lie");
                 }
             }
 
@@ -196,7 +287,7 @@ namespace Domain.Models.GameModels
             return result;
         }
 
-        public void EndGame()
+        public void EndGameTable()
         {
             GameStarted = false;
             Position = CountCardsForDiscard = 0;
@@ -209,8 +300,31 @@ namespace Domain.Models.GameModels
 
             foreach (var player in Players)
             {
-                player.StartGame = false;
-                player.PlayersCards = new List<PlayingCard>();
+                player.OnGameEnd();
+            }
+        }
+
+        private void InitPlayersCards(int numOfCards)
+        {
+            CardsDeck = new CardsDeck(numOfCards);
+            CardsDeck.GenerateCardsDeck();
+            CardsDeck.ShuffleCardsDeck();
+            CardsDeck.GiveCardsToPlayers(Players);
+        }
+
+        private void InitlCalcPlayer()
+        {
+            Random rnd = new Random();
+            Position = rnd.Next(0, Players.Count - 1);
+
+            CurrentMovePlayer = Players[Position];
+            if (Position == Players.Count - 1)
+            {
+                NextMovePlayer = Players[0];
+            }
+            else
+            {
+                NextMovePlayer = Players[Position + 1];
             }
         }
 

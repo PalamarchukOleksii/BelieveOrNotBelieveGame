@@ -1,6 +1,5 @@
 ﻿using Domain.Abstractions.GameAbstractions;
 using Domain.Models.GameModels;
-using Domain.Responses;
 using MediatR;
 
 namespace Application.GameTable.Commands.StartGameCommand
@@ -16,22 +15,50 @@ namespace Application.GameTable.Commands.StartGameCommand
 
         public Task<StartGameCommandResponse> Handle(StartGameCommandRequest request, CancellationToken cancellationToken)
         {
-            Player? caller = _gameTableService.GetPlayerWithConnectionId(request.CallerConnectionId, request.GameName);
-
-            if (caller == null)
+            Domain.Models.GameModels.GameTable? table = _gameTableService.GetGameTableByName(request.GameName);
+            if (table is null)
             {
-                throw new Exception("Player with this connection id does not exist");
+                return Task.FromResult(new StartGameCommandResponse
+                {
+                    Success = false,
+                    Message = $"Game with name {request.GameName} do not exist"
+                });
             }
 
-            StartGameResponse result = _gameTableService.StartGame(request.GameName, caller);
+            Player? player = table.GetPlayerByConnectionId(request.CallerConnectionId);
+            if (player is null)
+            {
+                return Task.FromResult(new StartGameCommandResponse
+                {
+                    Success = false,
+                    Message = $"Player with connection id {request.CallerConnectionId} do not exist in game {request.GameName}"
+                });
+            }
+
+            int countOfPlayersInOnGameTable = table.Players.Count;
+            if (countOfPlayersInOnGameTable < 2)
+            {
+                return Task.FromResult(new StartGameCommandResponse
+                {
+                    Success = false,
+                    Message = "Two players required to start the game"
+                });
+            }
+
+            bool result = table.StartGameTable(player);
+            if (result)
+            {
+                return Task.FromResult(new StartGameCommandResponse
+                {
+                    Success = result,
+                    Message = $"Game started"
+                });
+            }
 
             return Task.FromResult(new StartGameCommandResponse
             {
-                Result = result.Result,
-                Message = result.Message,
-                CurrentMovePlayerName = result.CurrentMovePlayerName,
-                CurrentMovePlayerConnectionId = result.CurrentMovePlayerConnectionId,
-                MakeMoveValue = result.MakeMoveValue
+                Success = result,
+                Message = $"Waiting for other players to start the game"
             });
         }
     }

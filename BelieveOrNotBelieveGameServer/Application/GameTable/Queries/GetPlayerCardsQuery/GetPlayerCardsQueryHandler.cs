@@ -1,5 +1,5 @@
 ﻿using Domain.Abstractions.GameAbstractions;
-using Domain.Responses;
+using Domain.Dtos;
 using MediatR;
 
 namespace Application.GameTable.Queries.GetPlayerCardsQuery
@@ -14,12 +14,23 @@ namespace Application.GameTable.Queries.GetPlayerCardsQuery
         }
         public Task<GetPlayerCardsQueryResponse> Handle(GetPlayerCardsQueryRequest request, CancellationToken cancellationToken)
         {
-            GetPlayersCardsResponse result = _gameTableService.GetPlayersCards(request.GameName);
+            Domain.Models.GameModels.GameTable? table = _gameTableService.GetGameTableByName(request.GameName);
+            if (table is null)
+            {
+                return Task.FromResult(new GetPlayerCardsQueryResponse
+                {
+                    Success = false,
+                    Message = $"Game with name {request.GameName} do not exist"
+                });
+            }
+
+            List<PlayerCardsDto> cards = table.GetPlayerCards();
 
             return Task.FromResult(new GetPlayerCardsQueryResponse
             {
                 Success = true,
-                PlayersCards = result.PlayersCards
+                Message = $"Cards of players on game {request.GameName} resived",
+                PlayersCards = cards
             });
         }
     }

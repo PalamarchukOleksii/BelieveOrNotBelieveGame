@@ -1,4 +1,5 @@
 ﻿using Domain.Abstractions.GameAbstractions;
+using Domain.Models.GameModels;
 using MediatR;
 
 namespace Application.GameTable.Commands.JoinGameCommand
@@ -14,9 +15,28 @@ namespace Application.GameTable.Commands.JoinGameCommand
 
         public Task<JoinGameCommandResponse> Handle(JoinGameCommandRequest request, CancellationToken cancellationToken)
         {
-            string result = _gameTableService.JoinGame(request.GameName, request.Username, request.CallerConnectionId);
+            Domain.Models.GameModels.GameTable? table = _gameTableService.GetGameTableByName(request.GameName);
+            if (table is null)
+            {
+                return Task.FromResult(new JoinGameCommandResponse
+                {
+                    Success = false,
+                    Message = $"Game with name {request.GameName} do not exist"
+                });
+            }
 
-            if (result == "Player join game")
+            Player? player = table.GetPlayerByName(request.Username);
+            if (player is not null)
+            {
+                return Task.FromResult(new JoinGameCommandResponse
+                {
+                    Success = false,
+                    Message = $"Player with username {request.Username} already exists in game {request.GameName}, please change the username"
+                });
+            }
+
+            bool result = table.JoinGameTable(request.Username, request.CallerConnectionId);
+            if (result)
             {
                 return Task.FromResult(new JoinGameCommandResponse
                 {
@@ -28,7 +48,7 @@ namespace Application.GameTable.Commands.JoinGameCommand
             return Task.FromResult(new JoinGameCommandResponse
             {
                 Success = false,
-                Message = $"Player with username {request.Username} already exists, please change the username"
+                Message = "Error on server, player not join"
             });
         }
     }

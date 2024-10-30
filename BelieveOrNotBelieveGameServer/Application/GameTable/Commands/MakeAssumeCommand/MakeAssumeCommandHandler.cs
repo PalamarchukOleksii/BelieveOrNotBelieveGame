@@ -14,16 +14,42 @@ namespace Application.GameTable.Commands.MakeAssumeCommand
         }
         public Task<MakeAssumeCommandResponse> Handle(MakeAssumeCommandRequest request, CancellationToken cancellationToken)
         {
-            Player? caller = _gameTableService.GetPlayerWithConnectionId(request.CallerConnectionId, request.GameName);
-
-            if (caller == null)
+            Domain.Models.GameModels.GameTable? table = _gameTableService.GetGameTableByName(request.GameName);
+            if (table is null)
             {
-                throw new Exception("Player with this connection id does not exist");
+                return Task.FromResult(new MakeAssumeCommandResponse
+                {
+                    Success = false,
+                    Message = $"Game with name {request.GameName} do not exist"
+                });
             }
 
-            _gameTableService.MakeAssume(request.GameName, request.IBelieve);
+            Player? player = table.GetPlayerByConnectionId(request.CallerConnectionId);
+            if (player is null)
+            {
+                return Task.FromResult(new MakeAssumeCommandResponse
+                {
+                    Success = false,
+                    Message = $"Player with connection id {request.CallerConnectionId} do not exist in game {request.GameName}"
+                });
+            }
 
-            throw new NotImplementedException();
+            if (table.CheckIfPlayerCanMakeAssume(player))
+            {
+                (bool EndGame, string Message) = table.MakeAssumeOnGameTable(request.IBelieve);
+                return Task.FromResult(new MakeAssumeCommandResponse
+                {
+                    Success = true,
+                    Message = Message,
+                    EndGame = EndGame
+                });
+            }
+
+            return Task.FromResult(new MakeAssumeCommandResponse
+            {
+                Success = false,
+                Message = $"You can not make assume",
+            });
         }
     }
 }

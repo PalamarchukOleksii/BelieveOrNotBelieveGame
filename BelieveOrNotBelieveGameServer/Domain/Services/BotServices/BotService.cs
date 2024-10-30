@@ -59,14 +59,14 @@ public class BotService : IBotService
                 var playersCards = RandomHelper.GetRandomCardsFromListByBotDificulty(p.PlayersCards, botDifficulty);
 
                 return new Player
-                {
-                    PlayerConnectionId = p.PlayerConnectionId,
-                    Name = p.Name,
-                    StartGame = p.StartGame,
-                    BotDifficulty = p.BotDifficulty,
-                    IsBot = p.IsBot,
-                    PlayersCards = playersCards.ToList(),
-                };
+                (
+                    p.PlayerConnectionId,
+                    p.Name,
+                    p.StartGame,
+                    p.BotDifficulty,
+                    p.IsBot,
+                    playersCards.ToList()
+                );
             }).ToList()
             ?? new List<Player>();
 
