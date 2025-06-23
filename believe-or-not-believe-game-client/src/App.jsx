@@ -15,7 +15,7 @@ function StartConnection() {
 
     return connection;
   } catch (e) {
-    console.log(e);
+    console.erro("Error on connecting:", e);
     return null;
   }
 }
