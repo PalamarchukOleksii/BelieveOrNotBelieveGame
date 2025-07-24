@@ -1,7 +1,5 @@
-﻿
-using Application.GameTable.Commands.CreateGameCommand;
+﻿using System.Collections.Concurrent;
 using Application.GameTable.Commands.EndGameCommand;
-using Application.GameTable.Commands.JoinGameCommand;
 using Application.GameTable.Commands.LeaveGameCommand;
 using Application.GameTable.Commands.MakeAssumeCommand;
 using Application.GameTable.Commands.MakeMoveCommand;
@@ -24,58 +22,66 @@ public class GameHub : Hub
     {
         _mediator = mediator;
     }
+    
+    private static readonly ConcurrentDictionary<string, string> Connections = new();
+    
+    public static bool ConnectionExists(string connectionId)
+    {
+        return Connections.ContainsKey(connectionId);
+    }
 
     public override async Task OnConnectedAsync()
     {
+        Connections.TryAdd(Context.ConnectionId, Context.ConnectionId);
         await Clients.Caller.SendAsync("ReceiveConnectionId", Context.ConnectionId);
 
         await base.OnConnectedAsync();
     }
 
-    public async Task CreateGame(CreateGameDto createGameInfo)
-    {
-        var response = await _mediator.Send(new CreateGameCommandRequest
-        {
-            GameName = createGameInfo.GameName,
-            NumOfCards = createGameInfo.NumOfCards,
-            MaxNumOfPlayers = createGameInfo.MaxNumOfPlayers,
-            AddBot = createGameInfo.AddBot
-        });
+    // public async Task CreateGame(CreateGameDto createGameInfo)
+    // {
+    //     var response = await _mediator.Send(new CreateGameCommandRequest
+    //     {
+    //         GameName = createGameInfo.GameName,
+    //         NumOfCards = createGameInfo.NumOfCards,
+    //         MaxNumOfPlayers = createGameInfo.MaxNumOfPlayers,
+    //         AddBot = createGameInfo.AddBot
+    //     });
+    //
+    //     if (response.Success)
+    //     {
+    //         await Clients.All.SendAsync("RecieveNewGameCreated", response.Message, response.GameTable);
+    //
+    //         await JoinGameTable(createGameInfo.CreatorName, createGameInfo.GameName);
+    //     }
+    //     else
+    //     {
+    //         await Clients.Caller.SendAsync("RecieveNewGameNotCreated", response.Message);
+    //     }
+    // }
 
-        if (response.Success)
-        {
-            await Clients.All.SendAsync("RecieveNewGameCreated", response.Message, response.GameTable);
-
-            await JoinGameTable(createGameInfo.CreatorName, createGameInfo.GameName);
-        }
-        else
-        {
-            await Clients.Caller.SendAsync("RecieveNewGameNotCreated", response.Message);
-        }
-    }
-
-    public async Task JoinGameTable(string username, string gameName)
-    {
-        var response = await _mediator.Send(new JoinGameCommandRequest
-        {
-            Username = username,
-            CallerConnectionId = Context.ConnectionId,
-            GameName = gameName
-        });
-
-        if (response.Success)
-        {
-            await Groups.AddToGroupAsync(Context.ConnectionId, gameName);
-
-            await Clients.GroupExcept(gameName, Context.ConnectionId).SendAsync("ReceiveJoin", response.Message);
-
-            await SendInfoAboutOpponents(gameName);
-        }
-        else
-        {
-            await Clients.Caller.SendAsync("ReceiveNotJoin", response.Message);
-        }
-    }
+    // public async Task JoinGameTable(string username, string gameName)
+    // {
+    //     var response = await _mediator.Send(new JoinGameCommandRequest
+    //     {
+    //         Username = username,
+    //         CallerConnectionId = Context.ConnectionId,
+    //         GameName = gameName
+    //     });
+    //
+    //     if (response.Success)
+    //     {
+    //         await Groups.AddToGroupAsync(Context.ConnectionId, gameName);
+    //
+    //         await Clients.GroupExcept(gameName, Context.ConnectionId).SendAsync("ReceiveJoin", response.Message);
+    //
+    //         await SendInfoAboutOpponents(gameName);
+    //     }
+    //     else
+    //     {
+    //         await Clients.Caller.SendAsync("ReceiveNotJoin", response.Message);
+    //     }
+    // }
 
     public async Task StartGame(string gameName)
     {
@@ -258,6 +264,8 @@ public class GameHub : Hub
                 if (leaveResponse.EndGame) await SendEndGame(gameNameResponse.GameName);
             }
         }
+        
+        Connections.TryRemove(Context.ConnectionId, out _);
 
         await base.OnDisconnectedAsync(exception);
     }

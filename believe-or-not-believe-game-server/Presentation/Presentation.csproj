@@ -8,17 +8,20 @@
 
     <ItemGroup>
         <PackageReference Include="Hellang.Middleware.ProblemDetails" Version="6.5.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.7"/>
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="9.0.6"/>
-        <PackageReference Include="Scalar.AspNetCore" Version="2.6.4"/>
         <PackageReference Include="SonarAnalyzer.CSharp" Version="10.11.0.117924">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.3" />
     </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Application\Application.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Features\" />
     </ItemGroup>
 
 </Project>

@@ -1,6 +1,6 @@
 using Presentation.Endpoints;
 
-namespace Presentation.Heals;
+namespace Presentation.Features.Heals;
 
 public static class CheckHeals
 {
@@ -8,7 +8,7 @@ public static class CheckHeals
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("/heals", () => Results.Ok());
+            app.MapGet("/heals", () => Results.Ok()).WithTags(EndpointTags.Heals);
         }
     }
 }

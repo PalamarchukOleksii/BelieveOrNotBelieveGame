@@ -3,7 +3,6 @@ using Domain;
 using Hellang.Middleware.ProblemDetails;
 using Presentation.Endpoints;
 using Presentation.Hubs;
-using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,9 +12,8 @@ builder.Services
 
 builder.Services.AddSignalR();
 
+builder.Services.AddControllers();
 builder.Services.AddEndpoints();
-
-builder.Services.AddOpenApi();
 
 builder.Services.AddProblemDetails(configure =>
 {
@@ -33,15 +31,32 @@ builder.Services.AddCors(options =>
     });
 });
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.CustomSchemaIds(type => type.FullName?.Replace("+", "."));
+});
+
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.IdleTimeout = TimeSpan.FromHours(3);
+});
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 //app.UseHttpsRedirection();
+
+app.UseSession();
+
 app.UseProblemDetails();
 
 app.UseAuthorization();
