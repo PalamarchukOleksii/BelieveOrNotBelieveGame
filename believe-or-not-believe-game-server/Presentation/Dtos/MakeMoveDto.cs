@@ -1,9 +1,10 @@
-﻿namespace Presentation.Dtos
+﻿using System.Collections.Generic;
+
+namespace Presentation.Dtos;
+
+public class MakeMoveDto
 {
-    public class MakeMoveDto
-    {
-        public string GameName { get; set; } = string.Empty;
-        public string CardsValue { get; set; } = string.Empty;
-        public List<int> CardsId { get; set; } = new List<int>();
-    }
+    public string GameName { get; set; } = string.Empty;
+    public string CardsValue { get; set; } = string.Empty;
+    public List<int> CardsId { get; set; } = new();
 }

@@ -1,11 +1,13 @@
-﻿using Domain.Common.Options;
-using Domain.Dtos;
+﻿using Domain.Dtos;
 
 namespace Domain.Models.GameModels
 {
     public class GameTable
     {
-        public GameTableOptions Options { get; private set; } = new GameTableOptions();
+        public string GameName { get; private set; } = string.Empty;
+        public int NumOfCards { get; private set; } = 0;
+        public int MaxNumOfPlayers { get; private set; } = 0;
+        public bool AddBot { get; private set; } = false;
         public List<Player> Players { get; private set; } = new List<Player>();
         public List<PlayingCard> CardsOnTable { get; private set; } = new List<PlayingCard>();
         public List<PlayingCard> CardsForDiscard { get; private set; } = new List<PlayingCard>();
@@ -21,9 +23,12 @@ namespace Domain.Models.GameModels
 
         public GameTable() { }
 
-        public GameTable(GameTableOptions options)
+        public GameTable(string gameName, int numOfCards, int maxNumOfPlayers, bool addBot)
         {
-            Options = options;
+            GameName = gameName;
+            NumOfCards = numOfCards;
+            MaxNumOfPlayers = maxNumOfPlayers;
+            AddBot = addBot;
         }
 
         public string CheckIfPlayerCanMakeMove(Player player, List<int> cardsId)
@@ -134,7 +139,7 @@ namespace Domain.Models.GameModels
             {
                 GameStarted = true;
 
-                InitPlayersCards(Options.NumOfCards);
+                InitPlayersCards(NumOfCards);
                 InitlCalcPlayer();
 
                 return true;

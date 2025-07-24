@@ -1,7 +1,9 @@
 using Application;
 using Domain;
 using Hellang.Middleware.ProblemDetails;
+using Presentation.Endpoints;
 using Presentation.Hubs;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,10 +13,9 @@ builder.Services
 
 builder.Services.AddSignalR();
 
-builder.Services.AddControllers();
+builder.Services.AddEndpoints();
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddOpenApi();
 
 builder.Services.AddProblemDetails(configure =>
 {
@@ -26,9 +27,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy("ClientCors", policy =>
     {
         policy.WithOrigins("http://localhost:5173")
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials();
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -36,16 +37,16 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseProblemDetails();
 
 app.UseAuthorization();
 
-app.MapControllers();
+app.MapEndpoints("api");
 
 app.MapHub<GameHub>("game-hub");
 

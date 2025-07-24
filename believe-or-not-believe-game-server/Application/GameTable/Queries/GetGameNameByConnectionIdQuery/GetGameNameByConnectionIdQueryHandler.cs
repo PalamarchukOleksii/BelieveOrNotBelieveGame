@@ -27,7 +27,7 @@ namespace Application.GameTable.Queries.GetGameNameByConnectionIdQuery
             return Task.FromResult(new GetGameNameByConnectionIdQueryResponse
             {
                 Success = true,
-                GameName = table.Options.GameName
+                GameName = table.GameName
             });
         }
     }

@@ -14,18 +14,18 @@ namespace Application.GameTable.Commands.CreateGameCommand
 
         public Task<CreateGameCommandResponse> Handle(CreateGameCommandRequest request, CancellationToken cancellationToken)
         {
-            Domain.Models.GameModels.GameTable? table = _gameTableService.GetGameTableByName(request.GameTableOptions.GameName);
+            Domain.Models.GameModels.GameTable? table = _gameTableService.GetGameTableByName(request.GameName);
 
             if (table is not null)
             {
                 return Task.FromResult(new CreateGameCommandResponse
                 {
                     Success = false,
-                    Message = $"Game with name {request.GameTableOptions.GameName} already exist"
+                    Message = $"Game with name {request.GameName} already exist"
                 });
             }
 
-            table = _gameTableService.CreateGameTable(request.GameTableOptions);
+            table = _gameTableService.CreateGameTable(request.GameName, request.NumOfCards, request.MaxNumOfPlayers, request.AddBot);
 
             if (table is null)
             {
@@ -39,7 +39,7 @@ namespace Application.GameTable.Commands.CreateGameCommand
             return Task.FromResult(new CreateGameCommandResponse
             {
                 Success = true,
-                Message = $"Game {table.Options.GameName} created",
+                Message = $"Game {table.GameName} created",
                 GameTable = table
             });
         }

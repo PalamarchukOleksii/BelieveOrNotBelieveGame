@@ -1,5 +1,4 @@
 ﻿using Domain.Abstractions.GameAbstractions;
-using Domain.Common.Options;
 using Domain.Models.GameModels;
 
 namespace Domain.Services.GameServices
@@ -8,23 +7,23 @@ namespace Domain.Services.GameServices
     {
         private readonly List<GameTable> gameTables = new List<GameTable>();
 
-        public GameTable? CreateGameTable(GameTableOptions gameTableOptions)
+        public GameTable? CreateGameTable(string gameName, int numOfCards, int maxNumOfPlayers, bool addBot)
         {
-            GameTable? table = gameTables.Find(x => x.Options.GameName == gameTableOptions.GameName);
+            GameTable? table = gameTables.Find(x => x.GameName == gameName);
 
             if (table is not null)
             {
                 return null;
             }
 
-            GameTable newGame = new GameTable(gameTableOptions);
+            GameTable newGame = new GameTable(gameName, numOfCards, maxNumOfPlayers, addBot);
             gameTables.Add(newGame);
             return newGame;
         }
 
         public bool DeleteGameTableByName(string gameName)
         {
-            GameTable? table = gameTables.Find(x => x.Options.GameName == gameName);
+            GameTable? table = gameTables.Find(x => x.GameName == gameName);
 
             if (table is null)
             {
@@ -36,7 +35,7 @@ namespace Domain.Services.GameServices
 
         public GameTable? GetGameTableByName(string gameName)
         {
-            GameTable? table = gameTables.Find(x => x.Options.GameName == gameName);
+            GameTable? table = gameTables.Find(x => x.GameName == gameName);
 
             if (table is null)
             {
