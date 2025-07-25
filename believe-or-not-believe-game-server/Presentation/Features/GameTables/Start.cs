@@ -1,7 +1,4 @@
-using Application.GameTable.Commands.StartGameCommand;
 using Domain.Abstractions.GameAbstractions;
-using Domain.Models.GameModels;
-using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using Presentation.Constants;
 using Presentation.Endpoints;

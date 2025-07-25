@@ -2,8 +2,6 @@
 using Application.GameTable.Commands.EndGameCommand;
 using Application.GameTable.Commands.LeaveGameCommand;
 using Application.GameTable.Commands.MakeAssumeCommand;
-using Application.GameTable.Commands.MakeMoveCommand;
-using Application.GameTable.Commands.StartGameCommand;
 using Application.GameTable.Queries.GetGameNameByConnectionIdQuery;
 using Application.GameTable.Queries.GetGameStateQuery;
 using Application.GameTable.Queries.GetInfoAboutOpponentsQuery;
