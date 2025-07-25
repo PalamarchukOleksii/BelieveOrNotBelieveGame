@@ -1,4 +1,5 @@
 ﻿using Domain.Dtos;
+using Domain.Enums;
 
 namespace Domain.Models.GameModels
 {
@@ -31,24 +32,18 @@ namespace Domain.Models.GameModels
             AddBot = addBot;
         }
 
-        public string CheckIfPlayerCanMakeMove(Player player, List<int> cardsId)
+        public MoveCheckResult CheckIfPlayerCanMakeMove(Player player, IReadOnlyList<int> cardsId)
         {
             if (player.PlayersCards.Count == 0)
-            {
-                return "Zero cards";
-            }
+                return MoveCheckResult.ZeroCards;
 
             if (player.Name != CurrentMovePlayer.Name)
-            {
-                return "Not this player's turn";
-            }
+                return MoveCheckResult.NotPlayersTurn;
 
             if (!player.CheckIfPlayerHaveSomeCards(cardsId))
-            {
-                return "Do not have these cards";
-            }
+                return MoveCheckResult.DoesNotHaveCards;
 
-            return "Can make move";
+            return MoveCheckResult.CanMakeMove;
         }
 
         public bool CheckIfPlayerCanMakeAssume(Player player)

@@ -38,95 +38,50 @@ public class GameHub : Hub
         await base.OnConnectedAsync();
     }
 
-    // public async Task CreateGame(CreateGameDto createGameInfo)
+    // public async Task StartGame(string gameName)
     // {
-    //     var response = await _mediator.Send(new CreateGameCommandRequest
+    //     var response = await _mediator.Send(new StartGameCommandRequest
     //     {
-    //         GameName = createGameInfo.GameName,
-    //         NumOfCards = createGameInfo.NumOfCards,
-    //         MaxNumOfPlayers = createGameInfo.MaxNumOfPlayers,
-    //         AddBot = createGameInfo.AddBot
-    //     });
-    //
-    //     if (response.Success)
-    //     {
-    //         await Clients.All.SendAsync("RecieveNewGameCreated", response.Message, response.GameTable);
-    //
-    //         await JoinGameTable(createGameInfo.CreatorName, createGameInfo.GameName);
-    //     }
-    //     else
-    //     {
-    //         await Clients.Caller.SendAsync("RecieveNewGameNotCreated", response.Message);
-    //     }
-    // }
-
-    // public async Task JoinGameTable(string username, string gameName)
-    // {
-    //     var response = await _mediator.Send(new JoinGameCommandRequest
-    //     {
-    //         Username = username,
     //         CallerConnectionId = Context.ConnectionId,
     //         GameName = gameName
     //     });
     //
     //     if (response.Success)
     //     {
-    //         await Groups.AddToGroupAsync(Context.ConnectionId, gameName);
-    //
-    //         await Clients.GroupExcept(gameName, Context.ConnectionId).SendAsync("ReceiveJoin", response.Message);
+    //         await Clients.Group(gameName).SendAsync("RecieveGameStarted", response.Message);
     //
     //         await SendInfoAboutOpponents(gameName);
+    //         await SendPlayersCards(gameName);
     //     }
     //     else
     //     {
-    //         await Clients.Caller.SendAsync("ReceiveNotJoin", response.Message);
+    //         await Clients.Group(gameName).SendAsync("RecieveGameNotStarted", response.Message);
     //     }
     // }
-
-    public async Task StartGame(string gameName)
-    {
-        var response = await _mediator.Send(new StartGameCommandRequest
-        {
-            CallerConnectionId = Context.ConnectionId,
-            GameName = gameName
-        });
-
-        if (response.Success)
-        {
-            await Clients.Group(gameName).SendAsync("RecieveGameStarted", response.Message);
-
-            await SendInfoAboutOpponents(gameName);
-            await SendPlayersCards(gameName);
-        }
-        else
-        {
-            await Clients.Group(gameName).SendAsync("RecieveGameNotStarted", response.Message);
-        }
-    }
-
-    public async Task MakeMove(MakeMoveDto makeMoveDto)
-    {
-        var response = await _mediator.Send(new MakeMoveCommandRequest
-        {
-            CallerConnectionId = Context.ConnectionId,
-            GameName = makeMoveDto.GameName,
-            CardsId = makeMoveDto.CardsId,
-            CardsValue = makeMoveDto.CardsValue
-        });
-
-        if (response.Success)
-        {
-            await Clients.Group(makeMoveDto.GameName).SendAsync("RecieveMove", response.Message);
-
-            await SendGameState(makeMoveDto.GameName);
-            await SendInfoAboutOpponents(makeMoveDto.GameName);
-            await SendPlayersCards(makeMoveDto.GameName);
-        }
-        else
-        {
-            await Clients.Caller.SendAsync("RecieveNotMove", response.Message);
-        }
-    }
+    //
+    // public async Task MakeMove(MakeMoveDto makeMoveDto)
+    // {
+    //     var response = await _mediator.Send(new MakeMoveCommandRequest
+    //     {
+    //         CallerConnectionId = Context.ConnectionId,
+    //         GameName = makeMoveDto.GameName,
+    //         CardsId = makeMoveDto.CardsId,
+    //         CardsValue = makeMoveDto.CardsValue
+    //     });
+    //
+    //     if (response.Success)
+    //     {
+    //         await Clients.Group(makeMoveDto.GameName).SendAsync("RecieveMove", response.Message);
+    //
+    //         await SendGameState(makeMoveDto.GameName);
+    //         await SendInfoAboutOpponents(makeMoveDto.GameName);
+    //         await SendPlayersCards(makeMoveDto.GameName);
+    //     }
+    //     else
+    //     {
+    //         await Clients.Caller.SendAsync("RecieveNotMove", response.Message);
+    //     }
+    // }
 
     public async Task MakeAssume(MakeAssumeDto makeAssumeDto)
     {

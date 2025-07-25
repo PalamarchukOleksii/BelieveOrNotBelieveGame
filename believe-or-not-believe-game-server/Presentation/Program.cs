@@ -45,6 +45,8 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromHours(3);
 });
 
+builder.Services.AddHttpLogging();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -54,6 +56,8 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
+
+app.UseHttpLogging();
 
 app.UseSession();
 

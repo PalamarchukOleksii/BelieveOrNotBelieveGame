@@ -40,7 +40,7 @@ namespace Domain.Models.GameModels
             PlayersCards = new List<PlayingCard>();
         }
 
-        public bool CheckIfPlayerHaveSomeCards(List<int> cardsId)
+        public bool CheckIfPlayerHaveSomeCards(IReadOnlyList<int> cardsId)
         {
             int count = 0;
             foreach (int id in cardsId)

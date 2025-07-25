@@ -1,14 +1,15 @@
+using Presentation.Constants;
 using Presentation.Endpoints;
 
 namespace Presentation.Features.Heals;
 
-public static class CheckHeals
+public static class Check
 {
     public class Endpoint : IEndpoint
     {
         public void MapEndpoint(IEndpointRouteBuilder app)
         {
-            app.MapGet("/heals", () => Results.Ok()).WithTags(EndpointTags.Heals);
+            app.MapGet($"{EndpointTags.Heals}/check", () => Results.Ok()).WithTags(EndpointTags.Heals);
         }
     }
 }
