@@ -95,13 +95,24 @@ namespace Domain.Models.GameModels
 
         public bool JoinGameTable(string username, string connectionId)
         {
-            if (!Players.Exists(x => x.Name == username))
-            {
-                Players.Add(new Player(connectionId, username));
-                return true;
-            }
+            if (Players.Exists(x => x.Name == username)) return false;
+            
+            Players.Add(new Player(connectionId, username));
+            return true;
+        }
 
-            return false;
+        public bool LeaveGameTable(string connectionId)
+        {
+            var player = Players.Find(x => x.PlayerConnectionId == connectionId);
+            if (player == null) return false;
+            
+            Players.Remove(player);
+            return true;
+        }
+        
+        public bool LeaveGameTable(Player player)
+        {
+            return Players.Remove(player);
         }
 
         public List<PlayerCardsDto> GetPlayerCards()

@@ -41,7 +41,7 @@ public static class Join
             return Results.BadRequest($"Player with username {request.Username} already exists in game {request.GameName}");
         }
     
-        var result = table.JoinGameTable(request.Username, request.ConnectionId);
+        var result = gameTableService.PlayerJoinGameTable(request.Username, request.ConnectionId, request.GameName);
         if (!result)
         {
             return Results.InternalServerError();

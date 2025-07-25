@@ -57,7 +57,7 @@ public static class Create
         await hubContext.Clients.All.SendAsync("RecieveNewGameCreated",
             new Response(table.GameName, table.NumOfCards, table.MaxNumOfPlayers, table.AddBot));
 
-        bool result = table.JoinGameTable(request.CreatorName, request.ConnectionId);
+        var result = gameTableService.PlayerJoinGameTable(request.CreatorName, request.ConnectionId, request.GameName);
         if (!result)
         {
             return Results.InternalServerError();

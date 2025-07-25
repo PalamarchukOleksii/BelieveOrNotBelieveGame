@@ -23,9 +23,9 @@ public class GameHub(IGameTableService gameTableService) : Hub
     
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
+        var connectionId = Context.ConnectionId;
         try
         {
-            var connectionId = Context.ConnectionId;
             var table = gameTableService.GetGameTableByConnectionId(connectionId);
             if (table is null)
                 return;
@@ -34,7 +34,10 @@ public class GameHub(IGameTableService gameTableService) : Hub
             if (player is null)
                 return;
 
-            table.Players.Remove(player);
+            bool result = gameTableService.PlayerLeaveGameTable(connectionId);
+            if (!result)
+                return;
+            
             await Clients.Group(table.GameName)
                 .SendAsync("RecievePlayerLeave", $"Player {player.Name} left the game");
 
@@ -45,11 +48,10 @@ public class GameHub(IGameTableService gameTableService) : Hub
                 await Clients.Group(table.GameName)
                     .SendAsync("RecieveEndGame", $"Game with name {table.GameName} has ended");
             }
-
-            Connections.TryRemove(connectionId, out _);
         }
         finally
         {
+            Connections.TryRemove(connectionId, out _);
             await base.OnDisconnectedAsync(exception);
         }
     }
