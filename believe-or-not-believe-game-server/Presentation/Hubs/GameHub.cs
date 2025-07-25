@@ -1,7 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using Application.GameTable.Commands.EndGameCommand;
 using Application.GameTable.Commands.LeaveGameCommand;
-using Application.GameTable.Commands.MakeAssumeCommand;
 using Application.GameTable.Queries.GetGameNameByConnectionIdQuery;
 using Application.GameTable.Queries.GetGameStateQuery;
 using Application.GameTable.Queries.GetInfoAboutOpponentsQuery;
@@ -80,36 +79,36 @@ public class GameHub : Hub
     //         await Clients.Caller.SendAsync("RecieveNotMove", response.Message);
     //     }
     // }
-
-    public async Task MakeAssume(MakeAssumeDto makeAssumeDto)
-    {
-        var response = await _mediator.Send(new MakeAssumeCommandRequest
-        {
-            CallerConnectionId = Context.ConnectionId,
-            GameName = makeAssumeDto.GameName,
-            IBelieve = makeAssumeDto.IBelieve
-        });
-
-        if (response.Success)
-        {
-            await Clients.Group(makeAssumeDto.GameName).SendAsync("RecieveNotAssume", response.Message);
-
-            if (response.EndGame)
-            {
-                await SendEndGame(makeAssumeDto.GameName);
-            }
-            else
-            {
-                await SendGameState(makeAssumeDto.GameName);
-                await SendInfoAboutOpponents(makeAssumeDto.GameName);
-                await SendPlayersCards(makeAssumeDto.GameName);
-            }
-        }
-        else
-        {
-            await Clients.Caller.SendAsync("RecieveNotAssume", response.Message);
-        }
-    }
+    //
+    // public async Task MakeAssume(MakeAssumeDto makeAssumeDto)
+    // {
+    //     var response = await _mediator.Send(new MakeAssumeCommandRequest
+    //     {
+    //         CallerConnectionId = Context.ConnectionId,
+    //         GameName = makeAssumeDto.GameName,
+    //         IBelieve = makeAssumeDto.IBelieve
+    //     });
+    //
+    //     if (response.Success)
+    //     {
+    //         await Clients.Group(makeAssumeDto.GameName).SendAsync("RecieveNotAssume", response.Message);
+    //
+    //         if (response.EndGame)
+    //         {
+    //             await SendEndGame(makeAssumeDto.GameName);
+    //         }
+    //         else
+    //         {
+    //             await SendGameState(makeAssumeDto.GameName);
+    //             await SendInfoAboutOpponents(makeAssumeDto.GameName);
+    //             await SendPlayersCards(makeAssumeDto.GameName);
+    //         }
+    //     }
+    //     else
+    //     {
+    //         await Clients.Caller.SendAsync("RecieveNotAssume", response.Message);
+    //     }
+    // }
 
     public async Task SendInfoAboutOpponents(string gameName)
     {

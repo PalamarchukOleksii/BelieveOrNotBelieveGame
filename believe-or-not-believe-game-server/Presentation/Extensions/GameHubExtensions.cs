@@ -58,4 +58,11 @@ public static class GameHubExtensions
         await hubContext.Clients.Group(table.GameName).SendAsync("ReceiveCardOnTableCount", gameState.CardsOnTableCount);
         await hubContext.Clients.Group(table.GameName).SendAsync("ReceiveMakeMoveValues", gameState.MakeMoveValue);
     }
+
+    public static async Task SendEndGameTableAsync(this IHubContext<GameHub> hubContext, GameTable table)
+    {
+        table.EndGameTable();
+        
+        await hubContext.Clients.Group(table.GameName).SendAsync("RecieveEndGame", $"Game with name {table.GameName} end");
+    }
 }
