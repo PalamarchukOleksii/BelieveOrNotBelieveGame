@@ -32,6 +32,7 @@ namespace Domain.Models.GameModels
             AddBot = addBot;
         }
 
+        //DONE: implement in GameEngine class
         public MoveCheckResult CheckIfPlayerCanMakeMove(Player player, IReadOnlyList<int> cardsId)
         {
             if (player.PlayersCards.Count == 0)
@@ -46,11 +47,13 @@ namespace Domain.Models.GameModels
             return MoveCheckResult.CanMakeMove;
         }
 
+        //DONE: implement in GameEngine class
         public bool CheckIfPlayerCanMakeAssume(Player player)
         {
             return player.Name == CurrentMovePlayer.Name;
         }
 
+        //DONE: implemented in PlayersManager class
         public Player? GetPlayerByName(string playerName)
         {
             Player? player = Players.Find(x => x.Name == playerName);
@@ -63,6 +66,7 @@ namespace Domain.Models.GameModels
             return null;
         }
 
+        //DONE: implemented in PlayersManager class
         public Player? GetPlayerByConnectionId(string connectionId)
         {
             Player? player = Players.Find(x => x.PlayerConnectionId == connectionId);
@@ -75,6 +79,7 @@ namespace Domain.Models.GameModels
             return null;
         }
 
+        //DONE: implemented in PlayersManager class
         public List<ShortOpponentInfoDto> GetShortInfoAboutPlayers()
         {
             return Players.Select(x => new ShortOpponentInfoDto
@@ -85,6 +90,7 @@ namespace Domain.Models.GameModels
             }).ToList();
         }
 
+        //TODO: implement in new style
         public (List<string> playersConnectionIds, List<string> playersWhoWinConnectionIds) GetAllConnectionId()
         {
             List<string> plConnIds = Players.Select(x => x.PlayerConnectionId).ToList();
@@ -93,6 +99,8 @@ namespace Domain.Models.GameModels
             return (plConnIds, plWhoWinConnIds);
         }
 
+        
+        //DONE: implemented in PlayersManager class
         public bool JoinGameTable(string username, string connectionId)
         {
             if (Players.Exists(x => x.Name == username)) return false;
@@ -101,6 +109,7 @@ namespace Domain.Models.GameModels
             return true;
         }
 
+        //DONE: implemented in PlayersManager class
         public bool LeaveGameTable(string connectionId)
         {
             var player = Players.Find(x => x.PlayerConnectionId == connectionId);
@@ -110,11 +119,13 @@ namespace Domain.Models.GameModels
             return true;
         }
         
+        //DONE: implemented in PlayersManager class
         public bool LeaveGameTable(Player player)
         {
             return Players.Remove(player);
         }
 
+        //DONE: implemented in PlayersManager class
         public List<PlayerCardsDto> GetPlayerCards()
         {
             return Players.Select(x => new PlayerCardsDto
@@ -123,7 +134,8 @@ namespace Domain.Models.GameModels
                 Cards = x.PlayersCards,
             }).ToList();
         }
-
+        
+        //DONE: implement in new GameTable class
         public GameStateDto GetGameState()
         {
             return new GameStateDto
@@ -137,6 +149,7 @@ namespace Domain.Models.GameModels
             };
         }
 
+        //DONE: implement in new GameTable class
         public bool StartGameTable(Player player)
         {
             player.SetStartGame(true);
@@ -154,6 +167,7 @@ namespace Domain.Models.GameModels
             return false;
         }
 
+        //DONE: implement in GameEngine class
         public void MakeMoveOnGameTable(Move move)
         {
             Move = move;
@@ -180,6 +194,7 @@ namespace Domain.Models.GameModels
             CalcPlayer();
         }
 
+        //DONE: implement in GameEngine class
         public (bool EndGame, string Message) MakeAssumeOnGameTable(bool iBelieve)
         {
             bool allCardsIsCorrect = true;
@@ -298,6 +313,7 @@ namespace Domain.Models.GameModels
             return result;
         }
 
+        //DONE: implement in new GameTable class
         public void EndGameTable()
         {
             GameStarted = false;
@@ -315,6 +331,7 @@ namespace Domain.Models.GameModels
             }
         }
 
+        //DONE: implement in DeckManager class
         private void InitPlayersCards(int numOfCards)
         {
             CardsDeck = new CardsDeck(numOfCards);
@@ -323,6 +340,7 @@ namespace Domain.Models.GameModels
             CardsDeck.GiveCardsToPlayers(Players);
         }
 
+        //DONE: implement in GameEngine class
         private void InitlCalcPlayer()
         {
             Random rnd = new Random();
@@ -339,6 +357,7 @@ namespace Domain.Models.GameModels
             }
         }
 
+        //DONE: implement in GameEngine class
         private void CalcPlayer()
         {
             PreviousMovePlayer = CurrentMovePlayer;
@@ -349,6 +368,7 @@ namespace Domain.Models.GameModels
             NextMovePlayer = Players[(Position + 1) % Players.Count];
         }
 
+        //DONE: implement in GameEngine class
         private void CalcPlayerWhenDelete()
         {
             List<Player> plWithNoCards = Players.Where(x => x.PlayersCards.Count == 0).ToList();

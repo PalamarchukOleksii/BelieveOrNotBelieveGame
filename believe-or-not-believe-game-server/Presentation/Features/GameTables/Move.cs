@@ -50,7 +50,7 @@ public static class Move
         switch (moveCheckResult)
         {
             case MoveCheckResult.CanMakeMove:
-                var playerMove = new Domain.Models.GameModels.Move(player.Name, request.CardsValue, request.CardsId);
+                var playerMove = new global::Domain.Models.GameModels.Move(player.Name, request.CardsValue, request.CardsId);
                 table.MakeMoveOnGameTable(playerMove);
 
                 isSuccess = true;
