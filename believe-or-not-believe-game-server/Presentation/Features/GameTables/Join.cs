@@ -1,6 +1,4 @@
-using Application.GameTable.Queries.GetInfoAboutOpponentsQuery;
 using Domain.Abstractions.GameAbstractions;
-using Domain.Dtos;
 using Microsoft.AspNetCore.SignalR;
 using Presentation.Constants;
 using Presentation.Endpoints;

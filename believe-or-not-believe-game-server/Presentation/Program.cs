@@ -1,4 +1,3 @@
-using Application;
 using Domain;
 using Hellang.Middleware.ProblemDetails;
 using Presentation.Endpoints;
@@ -7,7 +6,6 @@ using Presentation.Hubs;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services
-    .AddApplication()
     .AddDomain();
 
 builder.Services.AddSignalR();
@@ -45,7 +43,7 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromHours(3);
 });
 
-builder.Services.AddHttpLogging();
+builder.Services.AddHttpLogging(o => { });
 
 var app = builder.Build();
 

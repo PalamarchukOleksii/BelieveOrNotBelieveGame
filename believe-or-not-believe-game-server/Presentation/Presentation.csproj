@@ -17,11 +17,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Application\Application.csproj"/>
+      <Folder Include="Features\" />
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Features\" />
+      <ProjectReference Include="..\Domain\Domain.csproj" />
     </ItemGroup>
 
 </Project>
