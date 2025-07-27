@@ -216,11 +216,11 @@ namespace Domain.Models.GameModels
 
                 if (Players.TrueForAll(x => !x.PlayersCards.Any()))
                 {
-                    result = (true, $"Game over, {CurrentMovePlayer} lose, player {PreviousMovePlayer} do not lie");
+                    result = (true, $"GameModels over, {CurrentMovePlayer} lose, player {PreviousMovePlayer} do not lie");
                 }
                 else if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = (true, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do not lie");
+                    result = (true, $"GameModels over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do not lie");
                 }
                 else if (Players.Single(x => x.Name == CurrentMovePlayer.Name).PlayersCards.Count > 0)
                 {
@@ -244,7 +244,7 @@ namespace Domain.Models.GameModels
 
                 if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = (true, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do not lie");
+                    result = (true, $"GameModels over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do not lie");
                 }
                 else if (Players.Single(x => x.Name == NextMovePlayer.Name).PlayersCards.Count > 0)
                 {
@@ -267,7 +267,7 @@ namespace Domain.Models.GameModels
 
                 if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = new(true, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do lie");
+                    result = new(true, $"GameModels over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do lie");
                 }
                 else if (Players.Single(x => x.Name == NextMovePlayer.Name).PlayersCards.Count > 0)
                 {
@@ -290,7 +290,7 @@ namespace Domain.Models.GameModels
 
                 if (Players.Count(x => x.PlayersCards.Count > 0) == 1)
                 {
-                    result = (true, $"Game over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do lie");
+                    result = (true, $"GameModels over, {Players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do lie");
                 }
                 else if (Players.Single(x => x.Name == CurrentMovePlayer.Name).PlayersCards.Count > 0)
                 {
