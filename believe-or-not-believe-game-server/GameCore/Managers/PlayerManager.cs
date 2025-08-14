@@ -1,5 +1,7 @@
+using GameCore.Common;
 using GameCore.Dtos;
-using GameCore.Models.GameModels;
+using GameCore.Enums;
+using GameCore.Models;
 
 namespace GameCore.Managers;
 
@@ -15,39 +17,77 @@ public class PlayerManager
 
     public IReadOnlyList<Player> Players => _players;
 
-    public bool AddPlayer(string username, string connectionId)
+    public Result Add(string username, string connectionId)
     {
-        if (_players.Exists(x => x.Name == username) || _players.Count >= _maxPlayersCount) return false;
+        if (_players.Any(x => x.Name == username))
+        {
+            return Result.Failure(
+                code: "Player.DuplicateName",
+                message: $"A player with the name '{username}' already exists.",
+                type: ErrorType.Client
+            );
+        }
+
+        if (_players.Count >= _maxPlayersCount)
+        {
+            return Result.Failure(
+                code: "Player.LimitReached",
+                message: "The maximum number of players has been reached.",
+                type: ErrorType.Client
+            );
+        }
+
         _players.Add(new Player(connectionId, username));
-        return true;
+        return Result.Success();
     }
 
-    public bool RemovePlayer(string connectionId)
+    public Result Remove(string connectionId)
     {
-        var player = _players.Find(x => x.PlayerConnectionId == connectionId);
-        if (player == null) return false;
+        var player = _players.Find(x => x.ConnectionId == connectionId);
+        if (player is null)
+        {
+            return Result.Failure(
+                code: "Player.NotFound",
+                message: $"No player found with connection ID '{connectionId}'.",
+                type: ErrorType.Client
+            );
+        }
 
         _players.Remove(player);
-        return true;
+        return Result.Success();
+    }
+    
+    public Result<Player> GetByName(string name)
+    {
+        var player = _players.Find(x => x.Name == name);
+        return player is not null
+            ? Result<Player>.Success(player)
+            : Result<Player>.Failure(
+                code: "Player.NotFound",
+                message: $"No player found with name '{name}'.",
+                type: ErrorType.Client
+            );
     }
 
-    public Player? GetPlayerByName(string name)
+    public Result<Player> GetByConnectionId(string connectionId)
     {
-        return _players.Find(x => x.Name == name);
-    }
-
-    public Player? GetPlayerByConnectionId(string connectionId)
-    {
-        return _players.Find(x => x.PlayerConnectionId == connectionId);
+        var player = _players.Find(x => x.ConnectionId == connectionId);
+        return player is not null
+            ? Result<Player>.Success(player)
+            : Result<Player>.Failure(
+                code: "Player.NotFound",
+                message: $"No player found with connection ID '{connectionId}'.",
+                type: ErrorType.Client
+            );
     }
 
     public List<ShortOpponentInfoDto> GetShortInfoAboutPlayers()
     {
         return _players.Select(x => new ShortOpponentInfoDto
         {
-            PlayerConnectionId = x.PlayerConnectionId,
+            PlayerConnectionId = x.ConnectionId,
             Name = x.Name,
-            CardCount = x.PlayersCards.Count
+            CardCount = x.Cards.Count
         }).ToList();
     }
 
@@ -55,19 +95,29 @@ public class PlayerManager
     {
         return _players.Select(x => new PlayerCardsDto
         {
-            PlayerConnectionId = x.PlayerConnectionId,
-            Cards = x.PlayersCards
+            PlayerConnectionId = x.ConnectionId,
+            Cards = x.Cards.ToList()
         }).ToList();
     }
 
-    public void ApplyPlayerStartGame(string connectionId)
+    public Result ApplyStartGame(string connectionId)
     {
-        var player = GetPlayerByConnectionId(connectionId);
-        player?.SetStartGame(true);
+        var player = _players.Find(x => x.ConnectionId == connectionId);
+        if (player is null)
+        {
+            return Result.Failure(
+                code: "Player.NotFound",
+                message: $"No player found with connection ID '{connectionId}'.",
+                type: ErrorType.Client
+            );
+        }
+
+        player.StartGame();
+        return Result.Success();
     }
 
     public bool AreAllPlayersReady()
     {
-        return _players.Count > 0 && _players.All(p => p.StartGame);
+        return _players.Count > 0 && _players.All(p => p.IsReadyToStart);
     }
 }

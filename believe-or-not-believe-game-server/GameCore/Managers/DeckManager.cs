@@ -1,4 +1,4 @@
-using GameCore.Models.GameModels;
+using GameCore.Models;
 
 namespace GameCore.Managers;
 
@@ -9,11 +9,11 @@ public class DeckManager
         Deck = new Deck(numOfCards);
     }
 
-    public Deck Deck { get; }
+    private Deck Deck { get; }
+    public string[] DeckValues => Deck.CardValues;
 
-    public void InitializeDeck()
+    public void ShuffleDeck()
     {
-        Deck.GenerateCardsDeck();
         Deck.ShuffleCardsDeck();
     }
 

@@ -1,9 +1,9 @@
-﻿using GameCore.Abstractions.BotAbstractions;
+﻿using GameCore.Abstractions;
 using GameCore.Common.Helpers;
 using GameCore.Constants;
-using GameCore.Models.BotModels;
+using GameCore.Models;
 
-namespace GameCore.Services.BotServices;
+namespace GameCore.Services;
 
 public class BotNotFirstMoveService : IBotNotFirstMoveService
 {
@@ -16,7 +16,7 @@ public class BotNotFirstMoveService : IBotNotFirstMoveService
 
     public BotResponse MakeNotFirstMove(BotInfo botInfo)
     {
-        var myCards = botInfo.Bot.PlayersCards;
+        var myCards = botInfo.Bot.Cards;
         var cardValue = botInfo.LastMove.CardValue!;
         var countOfCardsInLastMove = botInfo.LastMove.CardsId.Count;
 

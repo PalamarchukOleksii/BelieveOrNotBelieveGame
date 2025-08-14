@@ -1,17 +1,16 @@
-﻿using GameCore.Abstractions.BotAbstractions;
+﻿using GameCore.Abstractions;
 using GameCore.Common.Helpers;
-using GameCore.Models.BotModels;
-using GameCore.Models.GameModels;
+using GameCore.Models;
 
-namespace GameCore.Services.BotServices;
+namespace GameCore.Services;
 
 public class BotMakeMoveService : IBotMakeMoveService
 {
     public BotResponse MakeMove(BotInfo botInfo, bool isFirstMove)
     {
-        var myCards = botInfo.Bot.PlayersCards;
+        var myCards = botInfo.Bot.Cards;
         var cardValue = isFirstMove
-            ? GetCardsValue(myCards)
+            ? GetCardsValue(myCards.ToList())
             : botInfo.LastMove.CardValue!;
 
         var isToTellTruth = RandomHelper.GenerateRandomBool();
@@ -25,14 +24,13 @@ public class BotMakeMoveService : IBotMakeMoveService
         {
             var numberOfCardsForMove = RandomHelper.GetRandomElmentFromList(new List<int> { 1, 2, 3, 4 });
 
-            cardsForMove = RandomHelper.GetRandomCardsFromList(myCards, numberOfCardsForMove);
+            cardsForMove = RandomHelper.GetRandomCardsFromList(myCards.ToList(), numberOfCardsForMove);
         }
 
         return new BotResponse
         (
             new Move
             (
-                botInfo.Bot.Name,
                 cardValue,
                 cardsForMove.Select(x => x.Id).ToList()
             )

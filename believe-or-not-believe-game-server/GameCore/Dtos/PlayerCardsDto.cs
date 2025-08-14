@@ -1,4 +1,4 @@
-﻿using GameCore.Models.GameModels;
+﻿using GameCore.Models;
 
 namespace GameCore.Dtos;
 

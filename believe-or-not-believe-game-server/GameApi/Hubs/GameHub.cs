@@ -1,9 +1,10 @@
 ﻿using System.Collections.Concurrent;
+using GameCore.Abstractions;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Presentation.Hubs;
 
-public class GameHub(IGameTableService gameTableService) : Hub
+public class GameHub(IGameSessionService gameSessionService) : Hub
 {
     private static readonly ConcurrentDictionary<string, string> Connections = new();
 
@@ -25,7 +26,7 @@ public class GameHub(IGameTableService gameTableService) : Hub
         var connectionId = Context.ConnectionId;
         try
         {
-            var table = gameTableService.GetGameTableByConnectionId(connectionId);
+            var table = gameSessionService.GetGameSessionByConnectionId(connectionId);
             if (table is null)
                 return;
 
@@ -33,7 +34,7 @@ public class GameHub(IGameTableService gameTableService) : Hub
             if (player is null)
                 return;
 
-            bool result = gameTableService.PlayerLeaveGameTable(connectionId);
+            bool result = gameSessionService.PlayerLeaveGameSession(connectionId);
             if (!result)
                 return;
 

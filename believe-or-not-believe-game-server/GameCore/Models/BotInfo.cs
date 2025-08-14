@@ -1,6 +1,4 @@
-﻿using GameCore.Models.GameModels;
-
-namespace GameCore.Models.BotModels;
+﻿namespace GameCore.Models;
 
 public class BotInfo
 {
@@ -14,7 +12,7 @@ public class BotInfo
     {
         Bot = bot;
         OtherPlayers = otherPlayers;
-        AllPlayersCards = otherPlayers.SelectMany(x => x.PlayersCards).ToList();
+        AllPlayersCards = otherPlayers.SelectMany(x => x.Cards).ToList();
         CardForDiscard = cardForDiscard;
         LastMove = lastMove;
         PreviousPlayerName = previousPlayerName;

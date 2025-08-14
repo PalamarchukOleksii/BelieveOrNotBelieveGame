@@ -1,6 +1,6 @@
 ﻿using GameCore.Enums;
 
-namespace GameCore.Models.BotModels;
+namespace GameCore.Models;
 
 public class Bot
 {

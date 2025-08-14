@@ -1,7 +1,7 @@
-﻿using GameCore.Abstractions.BotAbstractions;
-using GameCore.Models.BotModels;
+﻿using GameCore.Abstractions;
+using GameCore.Models;
 
-namespace GameCore.Services.BotServices;
+namespace GameCore.Services;
 
 public class BotFirstMoveService : IBotFirstMoveService
 {

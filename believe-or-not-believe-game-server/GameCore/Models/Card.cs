@@ -1,4 +1,4 @@
-﻿namespace GameCore.Models.GameModels;
+﻿namespace GameCore.Models;
 
 public class Card
 {

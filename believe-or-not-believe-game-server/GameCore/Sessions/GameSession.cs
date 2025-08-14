@@ -1,17 +1,16 @@
+using GameCore.Common;
 using GameCore.Dtos;
-using GameCore.Engines;
 using GameCore.Enums;
 using GameCore.Managers;
-using GameCore.Models.GameModels;
+using GameCore.Models;
 
 namespace GameCore.Sessions;
 
 public class GameSession
 {
     private readonly DeckManager _deckManager;
-
     private readonly PlayerManager _playerManager;
-    private GameEngine? _gameEngine;
+    private TurnManager? _turnManager;
 
     public GameSession(string gameName, int numOfCards, int maxNumOfPlayers, bool addBot)
     {
@@ -30,65 +29,83 @@ public class GameSession
     public bool AddBot { get; init; }
     private bool GameStarted { get; set; }
 
-    public bool JoinGameTable(string username, string connectionId)
+    public Result Join(string username, string connectionId)
     {
-        return _playerManager.AddPlayer(username, connectionId);
+        return _playerManager.Add(username, connectionId);
     }
 
-    public bool LeaveGameTable(string connectionId)
+    public Result Leave(string connectionId)
     {
-        return _playerManager.RemovePlayer(connectionId);
+        return _playerManager.Remove(connectionId);
     }
 
-    public bool StartGameTable(string connectionId)
+    public Result Start(string connectionId)
     {
-        _playerManager.RemovePlayer(connectionId);
+        _playerManager.ApplyStartGame(connectionId);
 
-        if (!_playerManager.AreAllPlayersReady()) return false;
+        if (!_playerManager.AreAllPlayersReady())
+        {
+            return Result.Failure(
+                code: "Game.NotAllPlayersReady",
+                message: "Not all players are ready to start the game.",
+                type: ErrorType.Validation
+            );
+        }
 
         GameStarted = true;
 
-        _deckManager.InitializeDeck();
+        _deckManager.ShuffleDeck();
         _deckManager.DealCardsToPlayers(_playerManager.Players.ToList());
 
-        _gameEngine = new GameEngine(_playerManager.Players.ToList());
+        _turnManager = new TurnManager(_playerManager.Players.ToList());
 
-        return GameStarted;
+        return Result.Success();
     }
 
-    public void EndGameTable()
+
+    public void End()
     {
         GameStarted = false;
-        _gameEngine?.Reset();
+        _turnManager?.Reset();
     }
 
-    public GameStateDto GetGameTableState()
+    public GameStateDto GetState()
     {
-        if (_gameEngine == null) return new GameStateDto();
+        if (_turnManager == null) return new GameStateDto();
 
         return new GameStateDto
         {
-            CurrentMovePlayerName = _gameEngine.CurrentMovePlayer.Name,
-            CurrentMovePlayerConnectionId = _gameEngine.CurrentMovePlayer.PlayerConnectionId,
-            CurrentPlayerCanMakeMove = _gameEngine.CurrentMovePlayer.PlayersCards.Count > 0,
-            CurrentPlayerCanMakeAssume = _gameEngine.CardsOnTable.Count > 0,
-            MakeMoveValue = _deckManager.Deck.Values.ToList(),
-            CardsOnTableCount = _gameEngine.CardsOnTable.Count
+            CurrentMovePlayerName = _turnManager.CurrentMovePlayer.Name,
+            CurrentMovePlayerConnectionId = _turnManager.CurrentMovePlayer.ConnectionId,
+            CurrentPlayerCanMakeMove = _turnManager.CurrentMovePlayer.Cards.Count > 0,
+            CurrentPlayerCanMakeAssume = _turnManager.CardsOnTable.Count > 0,
+            MakeMoveValue = _deckManager.DeckValues.ToList(),
+            CardsOnTableCount = _turnManager.CardsOnTable.Count
         };
     }
 
-    public MoveCheckResult CheckIfPlayerCanMakeMove(Player player, IReadOnlyList<int> cardsId)
+    public Result MakeMove(string playerConnectionId, Move move)
     {
-        return _gameEngine?.IsMoveAllowedForPlayer(player, cardsId) ?? MoveCheckResult.NotPlayersTurn;
+        var playerResult = _playerManager.GetByConnectionId(playerConnectionId);
+        if (!playerResult.IsSuccess)
+        {
+            return playerResult;
+        }
+
+        if (_turnManager is null)
+        {
+            return Result.Failure(
+                code: "Game.TurnManagerNotInitialized",
+                message: "Turn manager is not initialized.",
+                type: ErrorType.Server
+            );
+        }
+
+        return _turnManager.MakeMove(playerResult.Value, move);
     }
 
-    public void MakeMove(Move move)
+    public void MakeAssumption(bool isBelieved)
     {
-        _gameEngine?.MakeMove(move);
-    }
-
-    public void MakeAssume(bool isBelieved)
-    {
-        _gameEngine?.MakeAssume(isBelieved);
+        _turnManager?.MakeAssumption(isBelieved);
     }
 }

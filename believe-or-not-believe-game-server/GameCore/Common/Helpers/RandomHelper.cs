@@ -1,6 +1,6 @@
 ﻿using GameCore.Common.Mappers;
 using GameCore.Enums;
-using GameCore.Models.GameModels;
+using GameCore.Models;
 
 namespace GameCore.Common.Helpers;
 

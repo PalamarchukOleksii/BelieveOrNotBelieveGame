@@ -1,22 +1,23 @@
+using GameCore.Common;
 using GameCore.Enums;
-using GameCore.Models.GameModels;
+using GameCore.Models;
 
-namespace GameCore.Engines;
+namespace GameCore.Managers;
 
-public class GameEngine
+public class TurnManager
 {
     private readonly List<Player> _players;
     private int _position;
 
-    public GameEngine(List<Player> players)
+    public TurnManager(List<Player> players)
     {
         _players = players;
         InitPlayersOrder();
     }
 
-    public Player CurrentMovePlayer { get; private set; } = new();
-    public Player PreviousMovePlayer { get; private set; } = new();
-    public Player NextMovePlayer { get; private set; } = new();
+    public Player CurrentMovePlayer { get; private set; }
+    public Player PreviousMovePlayer { get; private set; }
+    public Player NextMovePlayer { get; private set; }
 
     public List<Card> CardsOnTable { get; private set; } = [];
     public List<Card> CardsForDiscard { get; } = [];
@@ -34,7 +35,7 @@ public class GameEngine
 
         PlayersWhoWin = [];
 
-        foreach (var player in _players) player.OnGameEnd();
+        foreach (var player in _players) player.EndGame();
     }
 
     private void InitPlayersOrder()
@@ -45,45 +46,63 @@ public class GameEngine
         NextMovePlayer = _players[(_position + 1) % _players.Count];
     }
 
-    public MoveCheckResult IsMoveAllowedForPlayer(Player player, IReadOnlyList<int> cardsId)
+    public bool CanMakeAssumption(Player player)
     {
-        if (player.PlayersCards.Count == 0)
+        return player.Name == CurrentMovePlayer.Name;
+    }
+
+    public Result MakeMove(Player player, Move move)
+    {
+        var moveCheckResult = CanMakeMove(player, move);
+        if (moveCheckResult != MoveCheckResult.CanMakeMove)
+        {
+            return moveCheckResult switch
+            {
+                MoveCheckResult.ZeroCards => Result.Failure("Player.ZeroCards", "Player has zero cards", ErrorType.Validation),
+                MoveCheckResult.NotPlayersTurn => Result.Failure("Player.NotTurn", "It is not the player's turn", ErrorType.Validation),
+                MoveCheckResult.DoesNotHaveCards => Result.Failure("Player.DoesNotHaveCards", "Player does not have the selected cards", ErrorType.Validation),
+                _ => Result.Failure("Player.UnknownError", "Unknown move validation error", ErrorType.Validation),
+            };
+        }
+        
+        ApplyMove(player, move);
+
+        return Result.Success();
+    }
+
+    private void ApplyMove(Player player, Move move)
+    {
+        CurrentMove = move;
+        var cardsToRemove = new List<Card>();
+
+        foreach (var card in player.Cards)
+            foreach (var id in move.CardsId)
+                if (card.Id == id)
+                {
+                    CardsOnTable.Add(card);
+                    cardsToRemove.Add(card);
+                }
+
+        foreach (var card in cardsToRemove) player.RemoveCard(card.Id);
+
+        AdvanceTurn();
+    }
+    
+    private MoveCheckResult CanMakeMove(Player player, Move move)
+    {
+        if (player.Cards.Count == 0)
             return MoveCheckResult.ZeroCards;
 
         if (player.Name != CurrentMovePlayer.Name)
             return MoveCheckResult.NotPlayersTurn;
 
-        if (!player.CheckIfPlayerHaveSomeCards(cardsId))
+        if (!player.HasCards(move.CardsId))
             return MoveCheckResult.DoesNotHaveCards;
 
         return MoveCheckResult.CanMakeMove;
     }
 
-    public bool IsAssumeAllowedForPlayer(Player player)
-    {
-        return player.Name == CurrentMovePlayer.Name;
-    }
-
-    public void MakeMove(Move move)
-    {
-        CurrentMove = move;
-        var player = _players.Single(x => x.Name == move.PlayerName);
-        var cardsToRemove = new List<Card>();
-
-        foreach (var card in player.PlayersCards)
-        foreach (var id in move.CardsId)
-            if (card.Id == id)
-            {
-                CardsOnTable.Add(card);
-                cardsToRemove.Add(card);
-            }
-
-        foreach (var card in cardsToRemove) player.PlayersCards.Remove(card);
-
-        AdvanceTurn();
-    }
-
-    public (bool EndGame, string Message) MakeAssume(bool isBelieved)
+    public (bool EndGame, string Message) MakeAssumption(bool isBelieved)
     {
         var allCardsIsCorrect = true;
         (bool EndGame, string Message) result;
@@ -100,21 +119,21 @@ public class GameEngine
             CountCardsForDiscard = CardsOnTable.Count;
             CardsForDiscard.AddRange(CardsOnTable);
 
-            if (_players.TrueForAll(x => !x.PlayersCards.Any()))
+            if (_players.TrueForAll(x => !x.Cards.Any()))
             {
                 result = (true, $"GameModels over, {CurrentMovePlayer} lose, player {PreviousMovePlayer} do not lie");
             }
-            else if (_players.Count(x => x.PlayersCards.Count > 0) == 1)
+            else if (_players.Count(x => x.Cards.Count > 0) == 1)
             {
                 result = (true,
-                    $"GameModels over, {_players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do not lie");
+                    $"GameModels over, {_players.Single(x => x.Cards.Count > 0).Name} lose, player {PreviousMovePlayer} do not lie");
             }
-            else if (_players.Single(x => x.Name == CurrentMovePlayer.Name).PlayersCards.Count > 0)
+            else if (_players.Single(x => x.Name == CurrentMovePlayer.Name).Cards.Count > 0)
             {
-                var plWithNoCards = _players.Where(x => x.PlayersCards.Count == 0).ToList();
+                var plWithNoCards = _players.Where(x => x.Cards.Count == 0).ToList();
                 PlayersWhoWin.AddRange(plWithNoCards);
 
-                _players.RemoveAll(x => x.PlayersCards.Count == 0);
+                _players.RemoveAll(x => x.Cards.Count == 0);
                 NextMovePlayer =
                     _players[
                         (_players.IndexOf(_players.Single(x => x.Name == CurrentMovePlayer.Name)) + 1) %
@@ -130,18 +149,18 @@ public class GameEngine
         }
         else if (allCardsIsCorrect && !isBelieved)
         {
-            _players.Single(x => x.Name == CurrentMovePlayer.Name).PlayersCards.AddRange(CardsOnTable);
+            _players.Single(x => x.Name == CurrentMovePlayer.Name).GiveCards(CardsOnTable);
 
-            if (_players.Count(x => x.PlayersCards.Count > 0) == 1)
+            if (_players.Count(x => x.Cards.Count > 0) == 1)
             {
                 result = (true,
-                    $"GameModels over, {_players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do not lie");
+                    $"GameModels over, {_players.Single(x => x.Cards.Count > 0).Name} lose, player {PreviousMovePlayer} do not lie");
             }
-            else if (_players.Single(x => x.Name == NextMovePlayer.Name).PlayersCards.Count > 0)
+            else if (_players.Single(x => x.Name == NextMovePlayer.Name).Cards.Count > 0)
             {
-                var plWithNoCards = _players.Where(x => x.PlayersCards.Count == 0).ToList();
+                var plWithNoCards = _players.Where(x => x.Cards.Count == 0).ToList();
                 PlayersWhoWin.AddRange(plWithNoCards);
-                _players.RemoveAll(x => x.PlayersCards.Count == 0);
+                _players.RemoveAll(x => x.Cards.Count == 0);
 
                 result = (false, $"{NextMovePlayer} player make next move, player {PreviousMovePlayer} do not lie");
                 AdvanceTurn();
@@ -154,18 +173,18 @@ public class GameEngine
         }
         else if (!allCardsIsCorrect && isBelieved)
         {
-            _players.Single(x => x.Name == CurrentMovePlayer.Name).PlayersCards.AddRange(CardsOnTable);
+            _players.Single(x => x.Name == CurrentMovePlayer.Name).GiveCards(CardsOnTable);
 
-            if (_players.Count(x => x.PlayersCards.Count > 0) == 1)
+            if (_players.Count(x => x.Cards.Count > 0) == 1)
             {
                 result = new ValueTuple<bool, string>(true,
-                    $"GameModels over, {_players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do lie");
+                    $"GameModels over, {_players.Single(x => x.Cards.Count > 0).Name} lose, player {PreviousMovePlayer} do lie");
             }
-            else if (_players.Single(x => x.Name == NextMovePlayer.Name).PlayersCards.Count > 0)
+            else if (_players.Single(x => x.Name == NextMovePlayer.Name).Cards.Count > 0)
             {
-                var plWithNoCards = _players.Where(x => x.PlayersCards.Count == 0).ToList();
+                var plWithNoCards = _players.Where(x => x.Cards.Count == 0).ToList();
                 PlayersWhoWin.AddRange(plWithNoCards);
-                _players.RemoveAll(x => x.PlayersCards.Count == 0);
+                _players.RemoveAll(x => x.Cards.Count == 0);
 
                 result = new ValueTuple<bool, string>(false,
                     $"{NextMovePlayer} player make next move, player {PreviousMovePlayer} dot lie");
@@ -180,19 +199,19 @@ public class GameEngine
         }
         else
         {
-            _players.Single(x => x.Name == PreviousMovePlayer.Name).PlayersCards.AddRange(CardsOnTable);
+            _players.Single(x => x.Name == PreviousMovePlayer.Name).GiveCards(CardsOnTable);
 
-            if (_players.Count(x => x.PlayersCards.Count > 0) == 1)
+            if (_players.Count(x => x.Cards.Count > 0) == 1)
             {
                 result = (true,
-                    $"GameModels over, {_players.Single(x => x.PlayersCards.Count > 0).Name} lose, player {PreviousMovePlayer} do lie");
+                    $"GameModels over, {_players.Single(x => x.Cards.Count > 0).Name} lose, player {PreviousMovePlayer} do lie");
             }
-            else if (_players.Single(x => x.Name == CurrentMovePlayer.Name).PlayersCards.Count > 0)
+            else if (_players.Single(x => x.Name == CurrentMovePlayer.Name).Cards.Count > 0)
             {
-                var plWithNoCards = _players.Where(x => x.PlayersCards.Count == 0).ToList();
+                var plWithNoCards = _players.Where(x => x.Cards.Count == 0).ToList();
                 PlayersWhoWin.AddRange(plWithNoCards);
 
-                _players.RemoveAll(x => x.PlayersCards.Count == 0);
+                _players.RemoveAll(x => x.Cards.Count == 0);
                 NextMovePlayer =
                     _players[
                         (_players.IndexOf(_players.Single(x => x.Name == CurrentMovePlayer.Name)) + 1) %
@@ -222,21 +241,21 @@ public class GameEngine
 
     private void AdvanceTurnWhenDelete()
     {
-        var plWithNoCards = _players.Where(x => x.PlayersCards.Count == 0).ToList();
+        var plWithNoCards = _players.Where(x => x.Cards.Count == 0).ToList();
         PlayersWhoWin.AddRange(plWithNoCards);
 
         var currentPlIndex = _players.IndexOf(_players.Single(x => x.Name == CurrentMovePlayer.Name));
         var nextPlIndex = 0;
 
         for (int i = currentPlIndex + 1 % _players.Count, c = 0; c < _players.Count; c++, i = (i + 1) % _players.Count)
-            if (_players[i].PlayersCards.Count != 0)
+            if (_players[i].Cards.Count != 0)
             {
                 nextPlIndex = i;
                 break;
             }
 
         CurrentMovePlayer = _players[nextPlIndex];
-        _players.RemoveAll(x => x.PlayersCards.Count == 0);
+        _players.RemoveAll(x => x.Cards.Count == 0);
 
         NextMovePlayer =
             _players[(_players.IndexOf(_players.Single(x => x.Name == CurrentMovePlayer.Name)) + 1) % _players.Count];

@@ -1,7 +1,5 @@
-using GameCore.Abstractions.BotAbstractions;
-using GameCore.Abstractions.GameAbstractions;
-using GameCore.Services.BotServices;
-using GameCore.Services.GameServices;
+using GameCore.Abstractions;
+using GameCore.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace GameCore.Extensions;
@@ -15,7 +13,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<IBotNotFirstMoveService, BotNotFirstMoveService>();
         //services.AddScoped<IBotService, BotService>();
 
-        services.AddSingleton<IGameTableService, GameTableService>();
+        services.AddSingleton<IGameSessionService, GameSessionService>();
 
         return services;
     }

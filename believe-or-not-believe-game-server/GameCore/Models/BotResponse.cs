@@ -1,6 +1,4 @@
-﻿using GameCore.Models.GameModels;
-
-namespace GameCore.Models.BotModels;
+﻿namespace GameCore.Models;
 
 public class BotResponse
 {
